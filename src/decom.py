@@ -100,66 +100,13 @@ def byte_stepping(num, start_tracker, content, opcode):
 
 def match_opcode(instruction, argument, opcode):
     opc = OPCODE_MAP.get(instruction)
-    if opc == 'LOAD_CONST':
-        opcode.LOAD_CONST(argument)
-    elif opc == 'STORE_NAME':
-        opcode.STORE_NAME(argument)
-    elif opc == 'LOAD_NAME':
-        opcode.LOAD_NAME(argument)
-    elif opc == 'LOAD_GLOBAL':
-        opcode.LOAD_GLOBAL(argument)
-    elif opc == 'STORE_GLOBAL':
-        opcode.STORE_GLOBAL(argument)
-    elif opc == 'CALL_FUNCTION':
-        opcode.CALL_FUNCTION(argument)
-    elif opc == 'IMPORT_STAR':
-        opcode.IMPORT_STAR(argument)
-    elif opc == 'IMPORT_NAME':
-        opcode.IMPORT_NAME(argument)
-    elif opc == 'IMPORT_FROM':
-        opcode.IMPORT_FROM(argument)
-    elif opc == 'BUILD_MAP':
-        opcode.BUILD_MAP(argument)
-    elif opc == 'BUILD_CONST_KEY_MAP':
-        opcode.BUILD_CONST_KEY_MAP(argument)
-    elif opc == 'BUILD_LIST':
-        opcode.BUILD_LIST(argument)
-    elif opc == 'LIST_EXTEND':
-        opcode.LIST_EXTEND(argument)
-
-    elif opc == 'POP_TOP':
-        print('hehe')
-        pass
-    elif opc == 'BINARY_SUBTRACT':
-        opcode.BINARY_SUBTRACT(argument)
-    elif opc == 'BINARY_ADD':
-        opcode.BINARY_ADD(argument)
-    elif opc == 'BINARY_TRUE_DIVIDE':
-        opcode.BINARY_TRUE_DIVIDE(argument)
-    elif opc == 'BINARY_FLOOR_DIVIDE':
-        opcode.BINARY_FLOOR_DIVIDE(argument)
-    elif opc == 'BINARY_POWER':
-        opcode.BINARY_POWER(argument)
-    elif opc == 'BINARY_MULTIPLY':
-        opcode.BINARY_MULTIPLY(argument)
-    elif opc == 'BINARY_MODULO':
-        opcode.BINARY_MODULO(argument)
-    elif opc == 'BINARY_SUBSCR':
-        opcode.BINARY_SUBSCR(argument)
-    elif opc == 'BINARY_LSHIFT':
-        opcode.BINARY_LSHIFT(argument)
-    elif opc == 'BINARY_RSHIFT':
-        opcode.BINARY_RSHIFT(argument)
-    elif opc == 'BINARY_AND':
-        opcode.BINARY_AND(argument)
-    elif opc == 'BINARY_XOR':
-        opcode.BINARY_XOR(argument)
-    elif opc == 'BINARY_OR':
-        opcode.BINARY_OR(argument)
-
-    #print(f'{instruction} {argument}')
-    #pass
+    if opcode.opcode.get(opc, None) is not None:
+        opcode.opcode.get(opc, None)(argument)
+    else:
+        print(f'No opcode with the name {opc} exists in 3.9')
 
 
-file_return = decompile_file('__pycache__/main.cpython-39.pyc')
-reconstruct(file_return, Opcode(file_return, CODE_STACK, INSTRUCTION_STACK))
+
+if __name__ == '__main__':
+    file_return = decompile_file('__pycache__/main.cpython-39.pyc')
+    reconstruct(file_return, Opcode(file_return, CODE_STACK, INSTRUCTION_STACK))

@@ -40,6 +40,40 @@ class Opcode:
         self.BINARY_XOR = self.binary_xor
         self.BINARY_OR = self.binary_or
 
+        self.opcode = self.get_opcodes()
+
+    def get_opcodes(self) -> dict:
+        opc = {
+            'LOAD_CONST': self.LOAD_CONST,
+            'STORE_NAME': self.STORE_NAME,
+            'LOAD_NAME': self.LOAD_NAME,
+            'LOAD_GLOBAL': self.LOAD_GLOBAL,
+            'STORE_GLOBAL': self.STORE_GLOBAL,
+            'CALL_FUNCTION': self.CALL_FUNCTION,
+            'IMPORT_STAR': self.IMPORT_STAR,
+            'IMPORT_NAME': self.IMPORT_NAME,
+            'IMPORT_FROM': self.IMPORT_FROM,
+            'BUILD_MAP': self.BUILD_MAP,
+            'BUILD_CONST_KEY_MAP': self.BUILD_CONST_KEY_MAP,
+            'BUILD_LIST': self.BUILD_LIST,
+            'LIST_EXTEND': self.LIST_EXTEND,
+            'POP_TOP': print('hehe'),
+            'BINARY_SUBTRACT': self.BINARY_SUBTRACT,
+            'BINARY_ADD': self.BINARY_ADD,
+            'BINARY_TRUE_DIVIDE': self.BINARY_TRUE_DIVIDE,
+            'BINARY_FLOOR_DIVIDE': self.BINARY_FLOOR_DIVIDE,
+            'BINARY_POWER': self.BINARY_POWER,
+            'BINARY_MULTIPLY': self.BINARY_MULTIPLY,
+            'BINARY_MODULO': self.BINARY_MODULO,
+            'BINARY_SUBSCR': self.BINARY_SUBSCR,
+            'BINARY_LSHIFT': self.BINARY_LSHIFT,
+            'BINARY_RSHIFT': self.BINARY_RSHIFT,
+            'BINARY_AND': self.BINARY_AND,
+            'BINARY_XOR': self.BINARY_XOR,
+            'BINARY_OR': self.BINARY_OR,
+        }
+        return opc
+
     def load_const(self, arg) -> None:
         print(f'LOAD_CONST {self.content.co_consts[arg]}')
         self.code_stack.append(self.content.co_consts[arg])
@@ -73,11 +107,33 @@ class Opcode:
 
     def call_function(self, arg) -> None:
         print(f'CALL_FUNCTION {self.code_stack[-(arg+1)]}')
-        pos_arg = []
-        for args in range(0,arg):
-            pos_arg.insert(0, self.code_stack.pop())
-        function_name = self.code_stack.pop()
-        self.code_stack.append(f'{function_name}({", ".join(pos_arg)})')
+        if self.instruction_stack[-1] != self.LIST_EXTEND:
+            pos_arg = []
+            for args in range(0,arg):
+                pos_arg.insert(0, self.code_stack.pop())
+            function_name = self.code_stack.pop()
+            if all(isinstance(x, str) for x in pos_arg):
+                self.code_stack.append(f'{function_name}({", ".join(pos_arg)})')
+            else:
+                str_content = ''
+                for item in pos_arg:
+                    print(f'ITEM:{item} TYPE:{type(item)}')
+                    str_content += f', {str(item)}'
+                self.code_stack.append(f'{function_name}({str_content})')
+        else:
+            pos_arg = self.code_stack.pop()
+            function_name = self.code_stack.pop()
+            if all(isinstance(x, str) for x in pos_arg):
+                self.code_stack.append(f'{function_name}({", ".join(pos_arg)})')
+            else:
+                str_content = ''
+                for item in pos_arg:
+                    if isinstance(item, str):
+                        str_content += f'\'{str(item)}\', '
+                    else:
+                        str_content += f'{str(item)}, '
+                str_content = str_content[:len(str_content)-2]
+                self.code_stack.append(f'{function_name}([{str_content}])')
         self.instruction_stack.append(self.call_function)
 
     def import_star(self, arg) -> None:
@@ -130,11 +186,16 @@ class Opcode:
 
     def build_list(self, arg) -> None:
         print(f'BUILD_LIST {arg}')
-        self.code_stack.append('[]')
-    #    elements = []
-    #    for index in range(0, arg):
-    #        elements.append(self.code_stack.pop())
-    #    self.code_stack.append('[' + f'{", ".join(elements)}' + ']')
+        if arg == 0:
+            self.code_stack.append('[]')
+        else:
+            elements = []
+            for index in range(0, arg):
+                if isinstance(self.code_stack[-1], str):
+                    elements.append("\'" + self.code_stack.pop() + "\'")
+                else:
+                    elements.append(self.code_stack.pop())
+            self.code_stack.append('[' + f'{", ".join(elements)}' + ']')
         self.instruction_stack.append(self.build_list)
 
     def list_extend(self, arg) -> None:
