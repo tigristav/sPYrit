@@ -11,6 +11,7 @@ class CodeParser:
         self.INSTRUCTION_STACK = []
         self.OUTPUT_STRING = ''
         self.RETURNED_STRING = ''
+        self.function_lines = 0
         self.HAS_ARGUMENT = 90
         self.opcode = Opcode(self.content, self.CODE_STACK, self.INSTRUCTION_STACK, indentation)
         self.opcode_map = opc_map
@@ -23,12 +24,17 @@ class CodeParser:
                 self.byte_stepping(num, start_line)
                 start_line += num
             else:
-                self.OUTPUT_STRING += '\n'*num
+                print(f'{[x.__name__ for x in self.INSTRUCTION_STACK]}')
+                if len(self.INSTRUCTION_STACK) > 1 and (self.INSTRUCTION_STACK[-2] is self.opcode.MAKE_FUNCTION or self.INSTRUCTION_STACK[-2].__name__ == 'make_function'):
+                    modified_num = num - self.function_lines
+                    self.OUTPUT_STRING += '\n'*modified_num
+                else:
+                    self.OUTPUT_STRING += '\n'*num
 
             counter += 1
 
-        if counter == len(self.content.co_lnotab)-1:
-            self.byte_stepping(len(self.content.co_code), start_line)
+        #if counter == len(self.content.co_lnotab)-1:
+        self.byte_stepping(len(self.content.co_code), start_line)
 
     def byte_stepping(self, num, line):
         start = line if line != 0 else 0
@@ -49,6 +55,7 @@ class CodeParser:
         if self.RETURNED_STRING != '':                          #adding function body after declaration in output
             print(f'OLD OUTPUT: {self.OUTPUT_STRING}')
             self.OUTPUT_STRING += self.RETURNED_STRING
+            self.function_lines = self.RETURNED_STRING.count('\n')
             self.RETURNED_STRING = ''
             print(f'NEW OUTPUT: {self.OUTPUT_STRING}')
 

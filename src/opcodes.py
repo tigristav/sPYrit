@@ -12,8 +12,10 @@ class Opcode:
         self.LOAD_GLOBAL = self.load_global
         self.STORE_GLOBAL = self.store_global
         self.STORE_FAST = self.store_fast
+        self.LOAD_FAST = self.load_fast
         self.MAKE_FUNCTION = self.make_function
         self.CALL_FUNCTION = self.call_function
+        self.RETURN_VALUE = self.return_value
         self.IMPORT_STAR = self.import_star
         self.IMPORT_NAME = self.import_name
         self.IMPORT_FROM = self.import_from
@@ -52,8 +54,10 @@ class Opcode:
             'LOAD_GLOBAL': self.LOAD_GLOBAL,
             'STORE_GLOBAL': self.STORE_GLOBAL,
             'STORE_FAST': self.STORE_FAST,
+            'LOAD_FAST': self.LOAD_FAST,
             'MAKE_FUNCTION': self.MAKE_FUNCTION,
             'CALL_FUNCTION': self.CALL_FUNCTION,
+            'RETURN_VALUE': self.RETURN_VALUE,
             'IMPORT_STAR': self.IMPORT_STAR,
             'IMPORT_NAME': self.IMPORT_NAME,
             'IMPORT_FROM': self.IMPORT_FROM,
@@ -114,6 +118,11 @@ class Opcode:
         self.code_stack.append(f'{self.indentation}' + f'{self.content.co_varnames[arg]} = ')
         self.instruction_stack.append(self.store_fast)
 
+    def load_fast(self, arg) -> None:
+        #print(f'LOAD_FAST {self.content.co_varnames[arg]}')
+        self.code_stack.append(f'{self.content.co_varnames[arg]}')
+        self.instruction_stack.append(self.load_fast)
+
     def make_function(self, arg) -> None: #no arguments supported as of yet
         #print(f'MAKE_FUNCTION {arg}')
         function_name = self.code_stack.pop()
@@ -153,6 +162,15 @@ class Opcode:
                 str_content = str_content[:len(str_content)-2]
                 self.code_stack.append(f'{function_name}([{str_content}])')
         self.instruction_stack.append(self.call_function)
+
+    def return_value(self, arg) -> None:
+        print(f'RETURN_VALUE {self.code_stack[-1]}')
+        return_value = self.code_stack.pop()
+        if return_value is None:
+            self.instruction_stack.append(self.return_value)
+        else:
+            self.code_stack.append(f'{self.indentation}' + f'return {return_value}')
+            self.instruction_stack.append(self.return_value)
 
     def import_star(self, arg) -> None:
         #print(f'IMPORT_STAR {self.code_stack[-arg]}')
