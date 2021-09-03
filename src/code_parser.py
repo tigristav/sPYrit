@@ -33,15 +33,12 @@ class CodeParser:
 
             counter += 1
 
-        #if counter == len(self.content.co_lnotab)-1:
         self.byte_stepping(len(self.content.co_code), start_line)
 
     def byte_stepping(self, num, line):
         start = line if line != 0 else 0
         end = start + num
-    #    print(f'{start} {end}')
         byte_slice = self.content.co_code[start:end]
-    #    print(byte_slice)
         counter = 0
         for byte in byte_slice[0::2]:
             if byte >= self.HAS_ARGUMENT:
