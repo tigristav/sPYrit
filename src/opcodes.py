@@ -83,6 +83,7 @@ class Opcode:
         return opc
 
     def pop_top(self, arg):
+        #fix later maybe idk
         return 0
 
     def load_const(self, arg) -> object:
