@@ -20,7 +20,7 @@
 - [Dependencies](#Dependencies)
 - [Installation](#Installation)
 - [Usage](#Usage)
-- [List of instructions](#List of available instructions)
+- [List of instructions](#List_of_available_instructions)
 
 
 ## Dependencies
