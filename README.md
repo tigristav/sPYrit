@@ -35,6 +35,6 @@ None as of yet. Only requirement is python version 3.9.
 
 ```
 
-## List of available instructions
+## [List of available instructions](#List_of_available_instructions)
 
 
