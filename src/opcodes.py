@@ -65,7 +65,7 @@ class Opcode:
             'BUILD_CONST_KEY_MAP': self.BUILD_CONST_KEY_MAP,
             'BUILD_LIST': self.BUILD_LIST,
             'LIST_EXTEND': self.LIST_EXTEND,
-            'POP_TOP': print('hehe'),
+            'POP_TOP': self.pop_top,
             'BINARY_SUBTRACT': self.BINARY_SUBTRACT,
             'BINARY_ADD': self.BINARY_ADD,
             'BINARY_TRUE_DIVIDE': self.BINARY_TRUE_DIVIDE,
@@ -81,6 +81,9 @@ class Opcode:
             'BINARY_OR': self.BINARY_OR,
         }
         return opc
+
+    def pop_top(self, arg):
+        return 0
 
     def load_const(self, arg) -> object:
         #print(f'LOAD_CONST {self.content.co_consts[arg]}')
