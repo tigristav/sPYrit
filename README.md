@@ -20,18 +20,14 @@
 - [Dependencies](#Dependencies)
 - [Installation](#Installation)
 - [Usage](#Usage)
-- [Functions](#Functions)
+- [List of instructions](#List_of_available_instructions)
 
 
 ## Dependencies
-None, outside of the built-in libraries.
-```sh
-	
-```
+None as of yet. Only requirement is python version 3.9.
 
 ## Installation
-1. Install dependencies
-2. Download or fetch the repo
+1. Download or fetch the repo
 
 ## Usage
 ```py
@@ -39,6 +35,6 @@ None, outside of the built-in libraries.
 
 ```
 
-## Functions
+## List of available instructions
 
 
