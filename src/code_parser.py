@@ -21,10 +21,10 @@ class CodeParser:
         counter = 0
         for num in self.content.co_lnotab:
             if counter % 2 == 0:
-                self.byte_stepping(num, start_line)
+                self.byte_stepping(num, start_line, False)
                 start_line += num
             else:
-                print(f'{[x.__name__ for x in self.INSTRUCTION_STACK]}')
+    #            print(f'{[x.__name__ for x in self.INSTRUCTION_STACK]}')
                 if len(self.INSTRUCTION_STACK) > 1 and (self.INSTRUCTION_STACK[-2] is self.opcode.MAKE_FUNCTION or self.INSTRUCTION_STACK[-2].__name__ == 'make_function'):
                     modified_num = num - self.function_lines
                     self.OUTPUT_STRING += '\n'*modified_num
@@ -33,9 +33,9 @@ class CodeParser:
 
             counter += 1
 
-        self.byte_stepping(len(self.content.co_code), start_line)
+        self.byte_stepping(len(self.content.co_code), start_line, True)
 
-    def byte_stepping(self, num, line):
+    def byte_stepping(self, num, line, is_end):
         start = line if line != 0 else 0
         end = start + num
         byte_slice = self.content.co_code[start:end]
@@ -47,7 +47,8 @@ class CodeParser:
                 self.match_opcode(byte, 0)
 
             counter += 2
-
+        if is_end and self.indentation == 0:
+            print(self.CODE_STACK.pop())
         self.empty_stack_to_string()
         if self.RETURNED_STRING != '':                          #adding function body after declaration in output
             print(f'OLD OUTPUT: {self.OUTPUT_STRING}')
@@ -59,6 +60,7 @@ class CodeParser:
     def match_opcode(self, instruction, argument):
         opc = self.opcode_map.get(instruction)
         if self.opcode.opcode.get(opc, None) is not None:
+        #    print(f'{opc} {argument}')
             result = self.opcode.opcode.get(opc, None)(argument)
             if isinstance(result, types.CodeType):
                 parser = CodeParser(result, self.opcode_map, self.indentation+4)
@@ -73,7 +75,8 @@ class CodeParser:
             if self.CODE_STACK[-1] is not None:
                 self.OUTPUT_STRING += str(self.CODE_STACK.pop())
             else:
-                self.CODE_STACK.pop()
+                self.OUTPUT_STRING += str(self.CODE_STACK.pop())
+        #        self.CODE_STACK.pop()
 
     def get_output(self):
         return self.OUTPUT_STRING

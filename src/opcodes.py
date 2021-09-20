@@ -24,6 +24,7 @@ class Opcode:
         self.DICT_UPDATE = self.dict_update
         self.BUILD_LIST = self.build_list
         self.LIST_EXTEND = self.list_extend
+        self.BUILD_TUPLE = self.build_tuple
         #build tuple
         #list to tuple
         #build set
@@ -65,6 +66,7 @@ class Opcode:
             'BUILD_CONST_KEY_MAP': self.BUILD_CONST_KEY_MAP,
             'BUILD_LIST': self.BUILD_LIST,
             'LIST_EXTEND': self.LIST_EXTEND,
+            'BUILD_TUPLE': self.BUILD_TUPLE,
             'POP_TOP': self.pop_top,
             'BINARY_SUBTRACT': self.BINARY_SUBTRACT,
             'BINARY_ADD': self.BINARY_ADD,
@@ -96,7 +98,7 @@ class Opcode:
         #print(f'STORE_NAME {self.content.co_names[arg]}')
         if self.instruction_stack[-1] == self.make_function:
             self.code_stack.append('')
-        elif len(self.code_stack) > 0 and not isinstance(self.code_stack[-1], int) and 'from' in self.code_stack[-1]:
+        elif len(self.code_stack) > 0 and not isinstance(self.code_stack[-1], int) and self.code_stack[-1] is not None and 'from' in self.code_stack[-1]:
             self.code_stack.append(f' import {self.content.co_names[arg]}')
         else:
             self.code_stack.append(f'{self.indentation}' + f'{self.content.co_names[arg]} = ')
@@ -168,10 +170,13 @@ class Opcode:
         self.instruction_stack.append(self.call_function)
 
     def return_value(self, arg) -> None:
-        print(f'RETURN_VALUE {self.code_stack[-1]}')
+    #    print(f'RETURN_VALUE {self.code_stack[-1]}')
         return_value = self.code_stack.pop()
         if return_value is None:
-            self.instruction_stack.append(self.return_value)
+            if self.indentation != 0:
+                self.code_stack.append(f'{self.indentation}' + f'return {return_value}')
+            else:
+                self.instruction_stack.append(self.return_value)
         else:
             self.code_stack.append(f'{self.indentation}' + f'return {return_value}')
             self.instruction_stack.append(self.return_value)
@@ -249,6 +254,18 @@ class Opcode:
         self.code_stack.append(list(contents))
         self.instruction_stack.append(self.list_extend)
 
+    def build_tuple(self, arg) -> None:
+        #print here
+        if arg == 0:
+            self.code_stack.append('()')
+        else:
+            elements = []
+            if isinstance(self.code_stack[-1], str):
+                elements.insert(0, "\'" + self.code_stack.pop() + "\'")
+            else:
+                elements.insert(0, self.code_stack.pop())
+            self.code_stack.append('(' + f'{", ".join(elements)}' + ')')
+        self.instruction_stack.append(self.build_tuple)
 
     def binary_subtract(self, arg) -> None:
         #print(f'BINARY_SUBTRACT {self.code_stack[-(arg-1)]} - {self.code_stack[-arg]}')

@@ -30,7 +30,7 @@ class Decompiler:
 
         parser = CodeParser(content, OPCODE_MAP)
         parser.line_tracker()
-        parser.get_instruction_stack()
+    #    parser.get_instruction_stack()
         print()
         self.OUTPUT_STRING += parser.get_output()
 
