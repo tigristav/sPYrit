@@ -148,7 +148,6 @@ class Opcode:
         #print(f'code object?? {code_obj}')
         if '\'' in function_name:
             function_name = function_name[1:-1]
-        print(f'DO THIS WÖRK: {self.func_argcount} {self.func_argnames}')
         if self.func_argcount > 0:
             temp = []
             for _ in range(0, self.func_argcount):

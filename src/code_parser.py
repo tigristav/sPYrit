@@ -65,18 +65,15 @@ class CodeParser:
             if self.opcode.opcode.get(opc, None) is not None and \
                     self.opcode.opcode.get(opc, None) is self.opcode.opcode.get('MAKE_FUNCTION') and \
                     len(self.RETURNED_ARGS) > 0:
-                print(f'IF STATEMENT')
                 self.opcode.update_func_args(self.RETURNED_ARGS.pop(), self.RETURNED_ARGS.pop())
             result = self.opcode.opcode.get(opc, None)(argument)
             if isinstance(result, types.CodeType):
                 self.RETURNED_ARGS.append(result.co_argcount)
                 self.RETURNED_ARGS.append(result.co_varnames[:result.co_argcount])
-                print(self.RETURNED_ARGS)
                 parser = CodeParser(result, self.opcode_map, self.indentation+4)
                 parser.line_tracker()
                 self.RETURNED_STRING = parser.get_output()
                 print(f'RETURNED {self.RETURNED_STRING}')
-
         else:
             print(f'No opcode with the name {opc} exists in 3.9')
 
