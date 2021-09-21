@@ -6,6 +6,8 @@ class Opcode:
         self.code_stack = code_stack
         self.instruction_stack = instruction_stack
         self.indentation = indentation * ' '
+        self.func_argcount = 0
+        self.func_argnames = []
         self.LOAD_CONST = self.load_const
         self.STORE_NAME = self.store_name
         self.LOAD_NAME = self.load_name
@@ -84,13 +86,23 @@ class Opcode:
         }
         return opc
 
+    def update_func_args(self, names, count) -> None:
+        #if we just send the names as arguments, argcount is redundant since
+        #we can extract the required amount of names before calling this function
+        #but mvp in the works so it will wait
+        self.func_argcount = count
+        self.func_argnames = list(names)
+
     def pop_top(self, arg):
         #fix later maybe idk
         return 0
 
     def load_const(self, arg) -> object:
         #print(f'LOAD_CONST {self.content.co_consts[arg]}')
-        self.code_stack.append(self.content.co_consts[arg])
+        if isinstance(self.content.co_consts[arg], str):
+            self.code_stack.append(f'\'{self.content.co_consts[arg]}\'')
+        else:
+            self.code_stack.append(self.content.co_consts[arg])
         self.instruction_stack.append(self.load_const)
         return self.content.co_consts[arg]
 
@@ -134,7 +146,17 @@ class Opcode:
         function_name = self.code_stack.pop()
         code_obj = self.code_stack.pop()
         #print(f'code object?? {code_obj}')
-        self.code_stack.append(f'def {function_name}({""}):')
+        if '\'' in function_name:
+            function_name = function_name[1:-1]
+        print(f'DO THIS WÖRK: {self.func_argcount} {self.func_argnames}')
+        if self.func_argcount > 0:
+            temp = []
+            for _ in range(0, self.func_argcount):
+                temp.append(self.func_argnames.pop())
+            temp.reverse() #can insert at 0 instead of this
+            self.code_stack.append(f'def {function_name}({", ".join(temp)}):')
+        else:
+            self.code_stack.append(f'def {function_name}({""}):')
         self.instruction_stack.append(self.make_function)
 
     def call_function(self, arg) -> None:
@@ -237,7 +259,8 @@ class Opcode:
             elements = []
             for index in range(0, arg):
                 if isinstance(self.code_stack[-1], str):
-                    elements.insert(0, "\'" + self.code_stack.pop() + "\'")
+    #                elements.insert(0, "\'" + self.code_stack.pop() + "\'")
+                    elements.insert(0, self.code_stack.pop())
                 else:
                     elements.insert(0, self.code_stack.pop())
             #print(f'TYPE: {[x for x in elements]}')
@@ -260,10 +283,11 @@ class Opcode:
             self.code_stack.append('()')
         else:
             elements = []
-            if isinstance(self.code_stack[-1], str):
-                elements.insert(0, "\'" + self.code_stack.pop() + "\'")
-            else:
-                elements.insert(0, self.code_stack.pop())
+            for index in range(0, arg):
+                if isinstance(self.code_stack[-1], str):
+                    elements.insert(0, "\'" + self.code_stack.pop() + "\'")
+                else:
+                    elements.insert(0, self.code_stack.pop())
             self.code_stack.append('(' + f'{", ".join(elements)}' + ')')
         self.instruction_stack.append(self.build_tuple)
 
