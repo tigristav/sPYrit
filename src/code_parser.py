@@ -52,11 +52,11 @@ class CodeParser:
             print(self.CODE_STACK.pop())
         self.empty_stack_to_string()
         if self.RETURNED_STRING != '':                          #adding function body after declaration in output
-            print(f'OLD OUTPUT: {self.OUTPUT_STRING}')
+    #        print(f'OLD OUTPUT: {self.OUTPUT_STRING}')
             self.OUTPUT_STRING += self.RETURNED_STRING
             self.function_lines = self.RETURNED_STRING.count('\n')
             self.RETURNED_STRING = ''
-            print(f'NEW OUTPUT: {self.OUTPUT_STRING}')
+    #        print(f'NEW OUTPUT: {self.OUTPUT_STRING}')
 
     def match_opcode(self, instruction, argument):
         opc = self.opcode_map.get(instruction)
@@ -73,7 +73,7 @@ class CodeParser:
                 parser = CodeParser(result, self.opcode_map, self.indentation+4)
                 parser.line_tracker()
                 self.RETURNED_STRING = parser.get_output()
-                print(f'RETURNED {self.RETURNED_STRING}')
+    #            print(f'RETURNED {self.RETURNED_STRING}')
         else:
             print(f'No opcode with the name {opc} exists in 3.9')
 

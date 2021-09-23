@@ -16,6 +16,7 @@ class Opcode:
         self.LOAD_FAST = self.load_fast
         self.MAKE_FUNCTION = self.make_function
         self.CALL_FUNCTION = self.call_function
+        self.CALL_FUNCTION_KW = self.call_function_kw
         self.RETURN_VALUE = self.return_value
         self.IMPORT_STAR = self.import_star
         self.IMPORT_NAME = self.import_name
@@ -31,8 +32,10 @@ class Opcode:
         self.BUILD_SET = self.build_set
         self.SET_UPDATE = self.set_update
         self.DUP_TOP = self.dup_top
+        self.EXTENDED_ARG = self.extended_arg
 
         self.COMPARE_OP = self.compare_op
+        self.IS_OP = self.is_op
 
         self.POP_JUMP_IF_TRUE = self.pop_jump_if_true
         self.POP_JUMP_IF_FALSE = self.pop_jump_if_false
@@ -74,6 +77,7 @@ class Opcode:
             'LOAD_FAST': self.LOAD_FAST,
             'MAKE_FUNCTION': self.MAKE_FUNCTION,
             'CALL_FUNCTION': self.CALL_FUNCTION,
+            'CALL_FUNCTION_KW': self.CALL_FUNCTION_KW,
             'RETURN_VALUE': self.RETURN_VALUE,
             'IMPORT_STAR': self.IMPORT_STAR,
             'IMPORT_NAME': self.IMPORT_NAME,
@@ -90,7 +94,10 @@ class Opcode:
             'SET_UPDATE': self.SET_UPDATE,
             'POP_TOP': self.pop_top,
             'DUP_TOP': self.DUP_TOP,
+            'EXTENDED_ARG': self.EXTENDED_ARG,
+
             'COMPARE_OP': self.COMPARE_OP,
+            'IS_OP': self.IS_OP,
 
             'POP_JUMP_IF_TRUE': self.POP_JUMP_IF_TRUE,
             'POP_JUMP_IF_FALSE': self.POP_JUMP_IF_FALSE,
@@ -182,11 +189,23 @@ class Opcode:
         if '\'' in function_name:
             function_name = function_name[1:-1]
         if self.func_argcount > 0:
-            temp = []
-            for _ in range(0, self.func_argcount):
-                temp.append(self.func_argnames.pop())
-            temp.reverse() #can insert at 0 instead of this
-            self.code_stack.append(f'def {function_name}({", ".join(temp)}):')
+            if arg == 1:
+                default_kw_values = self.code_stack.pop()
+            else:
+                default_kw_values = []
+            args_list = []
+            counter = 0
+            for index in range(0, self.func_argcount):
+                if 0 < len(default_kw_values) <= self.func_argcount-index and counter < len(default_kw_values):
+                    if isinstance(default_kw_values[counter], str):
+                        args_list.append(self.func_argnames.pop() + '=' + '\'' + str(default_kw_values[counter]) + '\'')
+                    else:
+                        args_list.append(self.func_argnames.pop() + '=' + str(default_kw_values[counter]))
+                    counter += 1
+                else:
+                    args_list.append(self.func_argnames.pop())
+            args_list.reverse() #can insert at 0 instead of this
+            self.code_stack.append(f'def {function_name}({", ".join(args_list)}):')
         else:
             self.code_stack.append(f'def {function_name}({""}):')
         self.instruction_stack.append(self.make_function)
@@ -222,6 +241,26 @@ class Opcode:
                 str_content = str_content[:len(str_content)-2]
                 self.code_stack.append(f'{function_name}([{str_content}])')
         self.instruction_stack.append(self.call_function)
+
+    def call_function_kw(self, arg) -> None:
+        #print here
+        arg_total = arg
+        kw_names = self.code_stack.pop() # tuple elements must be strings
+        kw_args = []
+        for index in range(0, len(kw_names)):
+            kw_args.append(kw_names[(len(kw_names)-1)-index] + '=' + str(self.code_stack.pop()))
+        kw_args.reverse()
+        pos_args = []
+        for index in range(0, arg_total-len(kw_names)):
+            pos_args.append(str(self.code_stack.pop()))
+        function_name = self.code_stack.pop()
+        if len(pos_args) != 0:
+            self.code_stack.append(f'{function_name}' + '(' + f'{", ".join(pos_args)}' + ', ' + f'{", ".join(kw_args)}' + ')')
+        else:
+            self.code_stack.append(f'{function_name}' + '(' + f'{", ".join(kw_args)}' + ')')
+        self.instruction_stack.append(self.call_function_kw)
+
+
 
     def return_value(self, arg) -> None:
     #    print(f'RETURN_VALUE {self.code_stack[-1]}')
@@ -380,6 +419,9 @@ class Opcode:
         self.code_stack.append(self.code_stack[-1])
         self.instruction_stack.append(self.dup_top)
 
+    def extended_arg(self, arg) -> None:
+        pass
+
     def compare_op(self, arg) -> None:
         #print here
         op = self.cmp_op[arg]
@@ -387,6 +429,16 @@ class Opcode:
         left_side = self.code_stack.pop()
         self.code_stack.append(f'{left_side} {op} {right_side}')
         self.instruction_stack.append(self.compare_op)
+
+    def is_op(self, arg) -> None:
+        #print here
+        right_side = self.code_stack.pop()
+        left_side = self.code_stack.pop()
+        if arg == 0:
+            self.code_stack.append(f'{left_side} is {right_side}')
+        else:
+            self.code_stack.append(f'{left_side} is not {right_side}')
+        self.instruction_stack.append(self.is_op)
 
     def pop_jump_if_true(self, arg) -> None:
         self.instruction_stack.append(self.pop_jump_if_true)
