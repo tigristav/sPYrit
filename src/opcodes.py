@@ -352,8 +352,6 @@ class Opcode:
         right_side = self.code_stack.pop()
         left_side = self.code_stack.pop()
         self.code_stack.append(f'{left_side} {op} {right_side}')
-        print(f'COMPAREEEEEEE {arg}')
-        print(self.code_stack)
         self.instruction_stack.append(self.compare_op)
 
 
