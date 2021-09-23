@@ -32,6 +32,9 @@ class Opcode:
         self.DUP_TOP = self.dup_top
 
         self.COMPARE_OP = self.compare_op
+
+        self.POP_JUMP_IF_TRUE = self.pop_jump_if_true
+        self.POP_JUMP_IF_FALSE = self.pop_jump_if_false
         #build string
 
         self.BINARY_SUBTRACT = self.binary_subtract
@@ -78,6 +81,8 @@ class Opcode:
             'POP_TOP': self.pop_top,
             'DUP_TOP': self.DUP_TOP,
             'COMPARE_OP': self.COMPARE_OP,
+            'POP_JUMP_IF_TRUE': self.POP_JUMP_IF_TRUE,
+            'POP_JUMP_IF_FALSE': self.POP_JUMP_IF_FALSE,
             'BINARY_SUBTRACT': self.BINARY_SUBTRACT,
             'BINARY_ADD': self.BINARY_ADD,
             'BINARY_TRUE_DIVIDE': self.BINARY_TRUE_DIVIDE,
@@ -354,6 +359,11 @@ class Opcode:
         self.code_stack.append(f'{left_side} {op} {right_side}')
         self.instruction_stack.append(self.compare_op)
 
+    def pop_jump_if_true(self, arg) -> None:
+        pass
+
+    def pop_jump_if_false(self, arg) -> None:
+        pass
 
     def binary_subtract(self, arg) -> None:
         #print(f'BINARY_SUBTRACT {self.code_stack[-(arg-1)]} - {self.code_stack[-arg]}')
