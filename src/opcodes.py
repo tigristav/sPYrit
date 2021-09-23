@@ -23,6 +23,7 @@ class Opcode:
         self.BUILD_MAP = self.build_map
         self.BUILD_CONST_KEY_MAP = self.build_const_key_map
         self.DICT_UPDATE = self.dict_update
+        self.STORE_SUBSCR = self.store_subscr
         self.BUILD_LIST = self.build_list
         self.LIST_EXTEND = self.list_extend
         self.BUILD_TUPLE = self.build_tuple
@@ -35,6 +36,8 @@ class Opcode:
 
         self.POP_JUMP_IF_TRUE = self.pop_jump_if_true
         self.POP_JUMP_IF_FALSE = self.pop_jump_if_false
+        self.GET_ITER = self.get_iter
+        self.FOR_ITER = self.for_iter
         #build string
 
         self.BINARY_SUBTRACT = self.binary_subtract
@@ -72,6 +75,8 @@ class Opcode:
             'IMPORT_FROM': self.IMPORT_FROM,
             'BUILD_MAP': self.BUILD_MAP,
             'BUILD_CONST_KEY_MAP': self.BUILD_CONST_KEY_MAP,
+            'STORE_SUBSCR': self.STORE_SUBSCR,
+            'DICT_UPDATE': self.DICT_UPDATE,
             'BUILD_LIST': self.BUILD_LIST,
             'LIST_EXTEND': self.LIST_EXTEND,
             'BUILD_TUPLE': self.BUILD_TUPLE,
@@ -81,8 +86,13 @@ class Opcode:
             'POP_TOP': self.pop_top,
             'DUP_TOP': self.DUP_TOP,
             'COMPARE_OP': self.COMPARE_OP,
+
             'POP_JUMP_IF_TRUE': self.POP_JUMP_IF_TRUE,
             'POP_JUMP_IF_FALSE': self.POP_JUMP_IF_FALSE,
+            'GET_ITER': self.GET_ITER,
+            'FOR_ITER': self.FOR_ITER,
+            
+
             'BINARY_SUBTRACT': self.BINARY_SUBTRACT,
             'BINARY_ADD': self.BINARY_ADD,
             'BINARY_TRUE_DIVIDE': self.BINARY_TRUE_DIVIDE,
@@ -263,6 +273,14 @@ class Opcode:
     def dict_update(self, arg) -> None:
         pass
 
+    def store_subscr(self, arg) -> None:
+        #print here
+        index = self.code_stack.pop()
+        container = self.code_stack.pop()
+        value = self.code_stack.pop()
+        self.code_stack.append(f'{container}[{index}] = {value}')
+        self.instruction_stack.append(self.store_subscr)
+
     def build_list(self, arg) -> None:
         #print(f'BUILD_LIST {arg}')
         if arg == 0:
@@ -363,6 +381,12 @@ class Opcode:
         pass
 
     def pop_jump_if_false(self, arg) -> None:
+        pass
+
+    def get_iter(self, arg) -> None:
+        pass
+
+    def for_iter(self, arg) -> None:
         pass
 
     def binary_subtract(self, arg) -> None:
