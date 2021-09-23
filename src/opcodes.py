@@ -38,7 +38,12 @@ class Opcode:
         self.POP_JUMP_IF_FALSE = self.pop_jump_if_false
         self.GET_ITER = self.get_iter
         self.FOR_ITER = self.for_iter
-        #build string
+        self.JUMP_ABSOLUTE = self.jump_absolute
+        self.JUMP_FORWARD = self.jump_forward
+
+        self.LOAD_ATTR = self.load_attr
+        self.LOAD_METHOD = self.load_method
+        self.CALL_METHOD = self.call_method
 
         self.BINARY_SUBTRACT = self.binary_subtract
         self.BINARY_ADD = self.binary_add
@@ -91,7 +96,12 @@ class Opcode:
             'POP_JUMP_IF_FALSE': self.POP_JUMP_IF_FALSE,
             'GET_ITER': self.GET_ITER,
             'FOR_ITER': self.FOR_ITER,
-            
+            'JUMP_ABSOLUTE': self.JUMP_ABSOLUTE,
+            'JUMP_FORWARD': self.JUMP_FORWARD,
+
+            'LOAD_ATTR': self.LOAD_ATTR,
+            'LOAD_METHOD': self.LOAD_METHOD,
+            'CALL_METHOD': self.CALL_METHOD,
 
             'BINARY_SUBTRACT': self.BINARY_SUBTRACT,
             'BINARY_ADD': self.BINARY_ADD,
@@ -251,13 +261,15 @@ class Opcode:
             content = []
             key = None
             val = None
-            for index in range(0, arg):
-                if index % 2 == 0:
-                    content.insert(0, key+':'+val)
+            for index in range(0, arg*2): #multiplied by 2 cause key value pair
+
+                if index % 2 == 0:# and index != 0:
                     val = self.code_stack.pop()
                 else:
                     key = self.code_stack.pop()
-            self.code_stack.append('{' + f'{content}' + '}')
+                    if key is not None and val is not None:
+                        content.insert(0, str(key) + ':' + str(val))
+            self.code_stack.append('{' + f'{", ".join(content)}' + '}')
         self.instruction_stack.append(self.build_map)
 
     def build_const_key_map(self, arg) -> None:
@@ -265,9 +277,9 @@ class Opcode:
         key_tuple = self.code_stack.pop()
         values = []
         for index in range(0, arg):
-            values.append(key_tuple[index] + ':' + self.code_stack.pop())
+            values.append(str(key_tuple[(arg-1)-index]) + ': ' + str(self.code_stack.pop()))
         values.reverse()
-        self.code_stack.append('{' + f'{values}' + '}')
+        self.code_stack.append('{' + f'{", ".join(values)}' + '}')
         self.instruction_stack.append(self.build_const_key_map)
 
     def dict_update(self, arg) -> None:
@@ -361,7 +373,6 @@ class Opcode:
             empty_brackets = self.code_stack.pop() #remove the previous empty set brackets on stack
             temp = [str(x) if x is None or isinstance(x, (int, float)) else '\'' + x + '\'' for x in temp]
             self.code_stack.append('{' + f'{", ".join(temp)}' + '}')
-            print(self.code_stack)
         self.instruction_stack.append(self.set_update)
 
     def dup_top(self, arg) -> None:
@@ -378,16 +389,52 @@ class Opcode:
         self.instruction_stack.append(self.compare_op)
 
     def pop_jump_if_true(self, arg) -> None:
+        self.instruction_stack.append(self.pop_jump_if_true)
         pass
 
     def pop_jump_if_false(self, arg) -> None:
+        self.instruction_stack.append(self.pop_jump_if_false)
         pass
 
     def get_iter(self, arg) -> None:
+        self.instruction_stack.append(self.get_iter)
         pass
 
     def for_iter(self, arg) -> None:
+        self.instruction_stack.append(self.for_iter)
         pass
+
+    def jump_absolute(self, arg) -> None:
+        self.instruction_stack.append(self.jump_absolute)
+        pass
+
+    def jump_forward(self, arg) -> None:
+        self.instruction_stack.append(self.jump_forward)
+        pass
+
+    def load_attr(self, arg) -> None:
+        #print here
+        attr = self.content.co_names[arg]
+        parent = self.code_stack.pop()
+        self.code_stack.append(f'{parent}.{attr}')
+        self.instruction_stack.append(self.load_attr)
+
+    def load_method(self, arg) -> None:
+        #print here
+        name = self.content.co_names[arg]
+        tos = self.code_stack.pop()
+        self.code_stack.append(f'{tos}.{name}')
+        self.instruction_stack.append(self.load_method)
+
+    def call_method(self, arg) -> None:
+        #print here
+        arguments = []
+        for _ in range(0, arg):
+            arguments.append(self.code_stack.pop())
+        arguments = [str(x) if x is None or isinstance(x, (int, float)) else '\'' + x + '\'' for x in arguments]
+        method = self.code_stack.pop()
+        self.code_stack.append(f'{method}' + '(' + f'{", ".join(reversed(arguments))}' + ')')
+        self.instruction_stack.append(self.call_method)
 
     def binary_subtract(self, arg) -> None:
         #print(f'BINARY_SUBTRACT {self.code_stack[-(arg-1)]} - {self.code_stack[-arg]}')

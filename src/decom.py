@@ -43,7 +43,7 @@ class Decompiler:
 
 
 if __name__ == '__main__':
-    file_path = '__pycache__/cointx.cpython-39.pyc'
+    file_path = '__pycache__/main.cpython-39.pyc'
     dec = Decompiler(file_path)
     dec.reconstruct(dec.file_content)
 
