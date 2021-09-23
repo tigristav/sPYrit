@@ -27,10 +27,9 @@ class Opcode:
         self.BUILD_LIST = self.build_list
         self.LIST_EXTEND = self.list_extend
         self.BUILD_TUPLE = self.build_tuple
-        #build tuple
-        #list to tuple
-        #build set
-        #set update
+        self.LIST_TO_TUPLE = self.list_to_tuple
+        self.BUILD_SET = self.build_set
+        self.SET_UPDATE = self.set_update
         #build string
 
         self.BINARY_SUBTRACT = self.binary_subtract
@@ -69,6 +68,9 @@ class Opcode:
             'BUILD_LIST': self.BUILD_LIST,
             'LIST_EXTEND': self.LIST_EXTEND,
             'BUILD_TUPLE': self.BUILD_TUPLE,
+            'LIST_TO_TUPLE': self.LIST_TO_TUPLE,
+            'BUILD_SET': self.BUILD_SET,
+            'SET_UPDATE': self.SET_UPDATE,
             'POP_TOP': self.pop_top,
             'BINARY_SUBTRACT': self.BINARY_SUBTRACT,
             'BINARY_ADD': self.BINARY_ADD,
@@ -141,7 +143,7 @@ class Opcode:
         self.code_stack.append(f'{self.content.co_varnames[arg]}')
         self.instruction_stack.append(self.load_fast)
 
-    def make_function(self, arg) -> None: #no arguments supported as of yet
+    def make_function(self, arg) -> None:
         #print(f'MAKE_FUNCTION {arg}')
         function_name = self.code_stack.pop()
         code_obj = self.code_stack.pop()
@@ -287,8 +289,51 @@ class Opcode:
                     elements.insert(0, "\'" + self.code_stack.pop() + "\'")
                 else:
                     elements.insert(0, self.code_stack.pop())
-            self.code_stack.append('(' + f'{", ".join(elements)}' + ')')
+            if None in elements:
+                elements = [str(x) if x is None else x[1:-1] for x in elements]
+                self.code_stack.append('(' + f'{", ".join(elements)}' + ')')
+            else:
+                elements = [x[1:-1] for x in elements]
+                self.code_stack.append('(' + f'{", ".join(elements)}' + ')')
         self.instruction_stack.append(self.build_tuple)
+
+    def list_to_tuple(self, arg) -> None:
+        #print here
+        old_list = self.code_stack.pop()
+        self.code_stack.append(tuple(old_list))
+        self.instruction_stack.append(self.list_to_tuple)
+
+    def build_set(self, arg) -> None:
+        #print here
+        if arg == 0:
+            self.code_stack.append('{}')
+        else:
+            # is this really needed? will build_set ever be called with > 0 arg?
+            # yes set constructor used this way will: set({'hello', 'there'})
+            elements = []
+            for index in range(0, arg):
+                if isinstance(self.code_stack[-1], str):
+                    elements.insert(0, "\'" + self.code_stack.pop() + "\'")
+                else:
+                    elements.insert(0, self.code_stack.pop())
+            if None in elements:
+                elements = [str(x) if x is None else x[1:-1] for x in elements]
+                self.code_stack.append('{' + f'{", ".join(elements)}' + '}')
+            else:
+                elements = [x[1:-1] for x in elements]
+                self.code_stack.append('{' + f'{", ".join(elements)}' + '}')
+        self.instruction_stack.append(self.build_set)
+
+    def set_update(self, args) -> None:
+        # produces wrong order of elements in the set since a frozen set is applied on compilation which alters order
+        if args > 0:
+            # removes frozenset( and ) from constants since it is applied in 3.9 for whatever reason
+            temp = list(self.code_stack.pop())
+            empty_brackets = self.code_stack.pop() #remove the previous empty set brackets on stack
+            temp = [str(x) if x is None or isinstance(x, (int, float)) else '\'' + x + '\'' for x in temp]
+            self.code_stack.append('{' + f'{", ".join(temp)}' + '}')
+            print(self.code_stack)
+        self.instruction_stack.append(self.set_update)
 
     def binary_subtract(self, arg) -> None:
         #print(f'BINARY_SUBTRACT {self.code_stack[-(arg-1)]} - {self.code_stack[-arg]}')
