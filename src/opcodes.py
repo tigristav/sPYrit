@@ -1,5 +1,4 @@
 
-
 class Opcode:
     def __init__(self, content, code_stack, instruction_stack, indentation):
         self.content = content
@@ -30,6 +29,9 @@ class Opcode:
         self.LIST_TO_TUPLE = self.list_to_tuple
         self.BUILD_SET = self.build_set
         self.SET_UPDATE = self.set_update
+        self.DUP_TOP = self.dup_top
+
+        self.COMPARE_OP = self.compare_op
         #build string
 
         self.BINARY_SUBTRACT = self.binary_subtract
@@ -46,6 +48,8 @@ class Opcode:
         self.BINARY_XOR = self.binary_xor
         self.BINARY_OR = self.binary_or
 
+        # cmp_op valid for 3.9.2 (possibly changes based on version since it is originally in dis.cmp_op)
+        self.cmp_op = ['<', '<=', '==', '!=', '>', '>=']
         self.opcode = self.get_opcodes()
 
     def get_opcodes(self) -> dict:
@@ -72,6 +76,8 @@ class Opcode:
             'BUILD_SET': self.BUILD_SET,
             'SET_UPDATE': self.SET_UPDATE,
             'POP_TOP': self.pop_top,
+            'DUP_TOP': self.DUP_TOP,
+            'COMPARE_OP': self.COMPARE_OP,
             'BINARY_SUBTRACT': self.BINARY_SUBTRACT,
             'BINARY_ADD': self.BINARY_ADD,
             'BINARY_TRUE_DIVIDE': self.BINARY_TRUE_DIVIDE,
@@ -335,12 +341,28 @@ class Opcode:
             print(self.code_stack)
         self.instruction_stack.append(self.set_update)
 
+    def dup_top(self, arg) -> None:
+        #print here
+        self.code_stack.append(self.code_stack[-1])
+        self.instruction_stack.append(self.dup_top)
+
+    def compare_op(self, arg) -> None:
+        #print here
+        op = self.cmp_op[arg]
+        right_side = self.code_stack.pop()
+        left_side = self.code_stack.pop()
+        self.code_stack.append(f'{left_side} {op} {right_side}')
+        print(f'COMPAREEEEEEE {arg}')
+        print(self.code_stack)
+        self.instruction_stack.append(self.compare_op)
+
+
     def binary_subtract(self, arg) -> None:
         #print(f'BINARY_SUBTRACT {self.code_stack[-(arg-1)]} - {self.code_stack[-arg]}')
         second_term = self.code_stack.pop()
         first_term = self.code_stack.pop()
         self.code_stack.append(f'{first_term} - {second_term}')
-        self.instruction_stack.append(self.binary_subtract())
+        self.instruction_stack.append(self.binary_subtract)
 
     def binary_true_divide(self, arg) -> None:
         #print(f'BINARY_TRUE_DIVIDE {self.code_stack[-(arg-1)]} - {self.code_stack[-arg]}')
