@@ -50,13 +50,24 @@ class CodeParser:
             counter += 2
         if is_end and self.indentation == 0:
             print(self.CODE_STACK.pop())
+
+    #    if is_end and self.INSTRUCTION_STACK[-2] == self.opcode.for_iter:
+    #        self.indentation += 4
+    #        self.opcode.indentation = self.opcode.indentation + (self.indentation * ' ')
         self.empty_stack_to_string()
+
+    #    print(f'output: {self.OUTPUT_STRING}')
+    #    if self.OUTPUT_STRING.isspace():
+    #        self.OUTPUT_STRING.strip(' ')
+    #    print(f'output: {self.OUTPUT_STRING}')
+
         if self.RETURNED_STRING != '':                          #adding function body after declaration in output
-    #        print(f'OLD OUTPUT: {self.OUTPUT_STRING}')
+        #    print(f'OLD OUTPUT: {self.OUTPUT_STRING}')
+
             self.OUTPUT_STRING += self.RETURNED_STRING
             self.function_lines = self.RETURNED_STRING.count('\n')
             self.RETURNED_STRING = ''
-    #        print(f'NEW OUTPUT: {self.OUTPUT_STRING}')
+        #    print(f'NEW OUTPUT: {self.OUTPUT_STRING}')
 
     def match_opcode(self, instruction, argument):
         opc = self.opcode_map.get(instruction)
@@ -73,17 +84,24 @@ class CodeParser:
                 parser = CodeParser(result, self.opcode_map, self.indentation+4)
                 parser.line_tracker()
                 self.RETURNED_STRING = parser.get_output()
-    #            print(f'RETURNED {self.RETURNED_STRING}')
         else:
             print(f'No opcode with the name {opc} exists in 3.9')
 
     def empty_stack_to_string(self):
+        #if len(self.INSTRUCTION_STACK) > 4:
+        #    if self.INSTRUCTION_STACK[-1] is not self.opcode.opcode.get('MAKE_FUNCTION', None) and \
+        #            self.INSTRUCTION_STACK[-3] is not self.opcode.opcode.get('MAKE_FUNCTION', None) \
+        #            and self.INSTRUCTION_STACK[-4] is not self.opcode.opcode.get('MAKE_FUNCTION', None):
+        self.opcode.indentation = self.indentation * ' '
+        self.OUTPUT_STRING += self.indentation * ' '
         while len(self.CODE_STACK) != 0:
             if self.CODE_STACK[-1] is not None:
                 self.OUTPUT_STRING += str(self.CODE_STACK.pop())
             else:
                 self.OUTPUT_STRING += str(self.CODE_STACK.pop())
         #        self.CODE_STACK.pop()
+        if self.OUTPUT_STRING[-3:].isspace():
+            self.OUTPUT_STRING = self.OUTPUT_STRING[0:len(self.OUTPUT_STRING)-4]
 
     def get_output(self):
         return self.OUTPUT_STRING

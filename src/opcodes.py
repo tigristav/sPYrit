@@ -33,6 +33,7 @@ class Opcode:
         self.SET_UPDATE = self.set_update
         self.DUP_TOP = self.dup_top
         self.EXTENDED_ARG = self.extended_arg
+        self.POP_TOP = self.pop_top
 
         self.COMPARE_OP = self.compare_op
         self.IS_OP = self.is_op
@@ -92,7 +93,7 @@ class Opcode:
             'LIST_TO_TUPLE': self.LIST_TO_TUPLE,
             'BUILD_SET': self.BUILD_SET,
             'SET_UPDATE': self.SET_UPDATE,
-            'POP_TOP': self.pop_top,
+            'POP_TOP': self.POP_TOP,
             'DUP_TOP': self.DUP_TOP,
             'EXTENDED_ARG': self.EXTENDED_ARG,
 
@@ -135,6 +136,7 @@ class Opcode:
 
     def pop_top(self, arg):
         #fix later maybe idk
+    #    self.code_stack.insert(0, self.indentation)
         return 0
 
     def load_const(self, arg) -> object:
@@ -150,10 +152,16 @@ class Opcode:
         #print(f'STORE_NAME {self.content.co_names[arg]}')
         if self.instruction_stack[-1] == self.make_function:
             self.code_stack.append('')
+        elif self.instruction_stack[-1] == self.get_iter or self.instruction_stack[-1] == self.for_iter: # for loopie
+            self.code_stack.append(f'for {self.content.co_names[arg]} in ')
+        #    self.code_stack.append(f'{self.indentation}' + f'for {self.content.co_names[arg]} in ')
+    #        self.indentation = self.indentation + (4 * ' ')
+            print('INDENTING')
         elif len(self.code_stack) > 0 and not isinstance(self.code_stack[-1], int) and self.code_stack[-1] is not None and 'from' in self.code_stack[-1]:
             self.code_stack.append(f' import {self.content.co_names[arg]}')
         else:
             self.code_stack.append(f'{self.indentation}' + f'{self.content.co_names[arg]} = ')
+
         self.instruction_stack.append(self.store_name)
 
     def load_name(self, arg) -> None:
@@ -173,7 +181,8 @@ class Opcode:
 
     def store_fast(self, arg) -> None:
         #print(f'STORE_FAST {arg}')
-        self.code_stack.append(f'{self.indentation}' + f'{self.content.co_varnames[arg]} = ')
+    #    self.code_stack.append(f'{self.indentation}' + f'{self.content.co_varnames[arg]} = ')
+        self.code_stack.append(f'{self.content.co_varnames[arg]} = ')
         self.instruction_stack.append(self.store_fast)
 
     def load_fast(self, arg) -> None:
@@ -197,10 +206,10 @@ class Opcode:
             counter = 0
             for index in range(0, self.func_argcount):
                 if 0 < len(default_kw_values) <= self.func_argcount-index and counter < len(default_kw_values):
-                    if isinstance(default_kw_values[counter], str):
-                        args_list.append(self.func_argnames.pop() + '=' + '\'' + str(default_kw_values[counter]) + '\'')
+                    if isinstance(default_kw_values[(len(default_kw_values)-1)-counter], str):
+                        args_list.append(self.func_argnames.pop() + '=' + '\'' + str(default_kw_values[(len(default_kw_values)-1)-counter]) + '\'')
                     else:
-                        args_list.append(self.func_argnames.pop() + '=' + str(default_kw_values[counter]))
+                        args_list.append(self.func_argnames.pop() + '=' + str(default_kw_values[(len(default_kw_values)-1)-counter]))
                     counter += 1
                 else:
                     args_list.append(self.func_argnames.pop())
@@ -214,7 +223,7 @@ class Opcode:
         #print(f'CALL_FUNCTION {self.code_stack[-(arg+1)]}')
         if self.instruction_stack[-1] != self.LIST_EXTEND:
             pos_arg = []
-            for args in range(0,arg):
+            for args in range(0, arg):
                 pos_arg.insert(0, self.code_stack.pop())
             #    pos_arg.append(self.code_stack.pop())
             function_name = self.code_stack.pop()
@@ -224,7 +233,8 @@ class Opcode:
                 str_content = ''
                 for item in pos_arg:
                     #print(f'ITEM:{item} TYPE:{type(item)}')
-                    str_content += f', {str(item)}'
+                    str_content += f'{str(item)}, '
+                str_content = str_content[:-2]
                 self.code_stack.append(f'{function_name}({str_content})')
         else:
             pos_arg = self.code_stack.pop()
@@ -249,10 +259,12 @@ class Opcode:
         kw_args = []
         for index in range(0, len(kw_names)):
             kw_args.append(kw_names[(len(kw_names)-1)-index] + '=' + str(self.code_stack.pop()))
+        #    kw_args.append(kw_names[(len(kw_names)-1)-index] + '=' + str(self.code_stack.pop()))
         kw_args.reverse()
         pos_args = []
         for index in range(0, arg_total-len(kw_names)):
             pos_args.append(str(self.code_stack.pop()))
+        pos_args.reverse()
         function_name = self.code_stack.pop()
         if len(pos_args) != 0:
             self.code_stack.append(f'{function_name}' + '(' + f'{", ".join(pos_args)}' + ', ' + f'{", ".join(kw_args)}' + ')')
@@ -260,18 +272,17 @@ class Opcode:
             self.code_stack.append(f'{function_name}' + '(' + f'{", ".join(kw_args)}' + ')')
         self.instruction_stack.append(self.call_function_kw)
 
-
-
     def return_value(self, arg) -> None:
     #    print(f'RETURN_VALUE {self.code_stack[-1]}')
         return_value = self.code_stack.pop()
         if return_value is None:
-            if self.indentation != 0:
-                self.code_stack.append(f'{self.indentation}' + f'return {return_value}')
+            if len(self.indentation) != 0:
+                self.code_stack.append(f'return {return_value}')
+        #        self.code_stack.append(f'{self.indentation}' + f'return {return_value}')
             else:
                 self.instruction_stack.append(self.return_value)
         else:
-            self.code_stack.append(f'{self.indentation}' + f'return {return_value}')
+            self.code_stack.append(f'return {return_value}')
             self.instruction_stack.append(self.return_value)
 
     def import_star(self, arg) -> None:
@@ -445,18 +456,27 @@ class Opcode:
         pass
 
     def pop_jump_if_false(self, arg) -> None:
+    #    self.indentation = self.indentation + (4 * ' ')
+        print('INDENTING')
         self.instruction_stack.append(self.pop_jump_if_false)
         pass
 
     def get_iter(self, arg) -> None:
+        if self.instruction_stack[-1] == self.call_function or self.instruction_stack[-1] == self.call_function_kw:
+            func = self.code_stack.pop()
+            func += ':'
+            self.code_stack.append(func)
         self.instruction_stack.append(self.get_iter)
-        pass
 
     def for_iter(self, arg) -> None:
         self.instruction_stack.append(self.for_iter)
         pass
 
     def jump_absolute(self, arg) -> None:
+        print(f'stack')
+        print(self.code_stack)
+        print('INDENTING REMOVED')
+    #    self.indentation = self.indentation[:-4]
         self.instruction_stack.append(self.jump_absolute)
         pass
 
