@@ -62,6 +62,20 @@ class Opcode:
         self.BINARY_AND = self.binary_and
         self.BINARY_XOR = self.binary_xor
         self.BINARY_OR = self.binary_or
+        self.BINARY_MATRIX_MULTIPLY = self.binary_matrix_multiply
+        self.INPLACE_SUBTRACT = self.inplace_subtract
+        self.INPLACE_ADD = self.inplace_add
+        self.INPLACE_TRUE_DIVIDE = self.inplace_true_divide
+        self.INPLACE_FLOOR_DIVIDE = self.inplace_floor_divide
+        self.INPLACE_POWER = self.inplace_power
+        self.INPLACE_MULTIPLY = self.inplace_multiply
+        self.INPLACE_MODULO = self.inplace_modulo
+        self.INPLACE_LSHIFT = self.inplace_lshift
+        self.INPLACE_RSHIFT = self.inplace_rshift
+        self.INPLACE_AND = self.inplace_and
+        self.INPLACE_XOR = self.inplace_xor
+        self.INPLACE_OR = self.inplace_or
+        self.INPLACE_MATRIX_MULTIPLY = self.inplace_matrix_multiply
 
         # cmp_op valid for 3.9.2 (possibly changes based on version since it is originally in dis.cmp_op)
         self.cmp_op = ['<', '<=', '==', '!=', '>', '>=']
@@ -124,6 +138,20 @@ class Opcode:
             'BINARY_AND': self.BINARY_AND,
             'BINARY_XOR': self.BINARY_XOR,
             'BINARY_OR': self.BINARY_OR,
+            'BINARY_MATRIX_MULTIPLY': self.BINARY_MATRIX_MULTIPLY,
+            'INPLACE_SUBTRACT': self.INPLACE_SUBTRACT,
+            'INPLACE_ADD': self.INPLACE_ADD,
+            'INPLACE_TRUE_DIVIDE': self.INPLACE_TRUE_DIVIDE,
+            'INPLACE_FLOOR_DIVIDE': self.INPLACE_FLOOR_DIVIDE,
+            'INPLACE_POWER': self.INPLACE_POWER,
+            'INPLACE_MULTIPLY': self.INPLACE_MULTIPLY,
+            'INPLACE_MODULO': self.INPLACE_MODULO,
+            'INPLACE_LSHIFT': self.INPLACE_LSHIFT,
+            'INPLACE_RSHIFT': self.INPLACE_RSHIFT,
+            'INPLACE_AND': self.INPLACE_AND,
+            'INPLACE_XOR': self.INPLACE_XOR,
+            'INPLACE_OR': self.INPLACE_OR,
+            'INPLACE_MATRIX_MULTIPLY': self.INPLACE_MATRIX_MULTIPLY,
         }
         return opc
 
@@ -156,7 +184,12 @@ class Opcode:
             self.code_stack.append(f'for {self.content.co_names[arg]} in ')
         #    self.code_stack.append(f'{self.indentation}' + f'for {self.content.co_names[arg]} in ')
     #        self.indentation = self.indentation + (4 * ' ')
-            print('INDENTING')
+        elif self.instruction_stack[-1] in {self.INPLACE_MULTIPLY, self.INPLACE_ADD, self.INPLACE_SUBTRACT,
+                                            self.INPLACE_ADD, self.INPLACE_TRUE_DIVIDE,self.INPLACE_FLOOR_DIVIDE,
+                                            self.INPLACE_POWER, self.INPLACE_MULTIPLY, self.INPLACE_MODULO,
+                                            self.INPLACE_LSHIFT, self.INPLACE_RSHIFT, self.INPLACE_AND, self.INPLACE_XOR,
+                                            self.INPLACE_OR, self.INPLACE_MATRIX_MULTIPLY}:
+            pass
         elif len(self.code_stack) > 0 and not isinstance(self.code_stack[-1], int) and self.code_stack[-1] is not None and 'from' in self.code_stack[-1]:
             self.code_stack.append(f' import {self.content.co_names[arg]}')
         else:
@@ -275,6 +308,7 @@ class Opcode:
     def return_value(self, arg) -> None:
     #    print(f'RETURN_VALUE {self.code_stack[-1]}')
         return_value = self.code_stack.pop()
+        print(return_value)
         if return_value is None:
             if len(self.indentation) != 0:
                 self.code_stack.append(f'return {return_value}')
@@ -457,7 +491,6 @@ class Opcode:
 
     def pop_jump_if_false(self, arg) -> None:
     #    self.indentation = self.indentation + (4 * ' ')
-        print('INDENTING')
         self.instruction_stack.append(self.pop_jump_if_false)
         pass
 
@@ -475,7 +508,6 @@ class Opcode:
     def jump_absolute(self, arg) -> None:
         print(f'stack')
         print(self.code_stack)
-        print('INDENTING REMOVED')
     #    self.indentation = self.indentation[:-4]
         self.instruction_stack.append(self.jump_absolute)
         pass
@@ -598,4 +630,102 @@ class Opcode:
         bits_1 = self.code_stack.pop()
         self.code_stack.append(f'{bits_1} | {bits_2}')
         self.instruction_stack.append(self.binary_or)
+
+    def binary_matrix_multiply(self, arg) -> None:
+        #print here
+        second_factor = self.code_stack.pop()
+        first_factor = self.code_stack.pop()
+        self.code_stack.append(f'{first_factor} @ {second_factor}')
+        self.instruction_stack.append(self.binary_matrix_multiply)
+
+    def inplace_subtract(self, arg) -> None:
+        #print here
+        second_term = self.code_stack.pop()
+        first_term = self.code_stack.pop()
+        self.code_stack.append(f'{first_term} *= {second_term}')
+        self.instruction_stack.append(self.inplace_subtract)
+
+    def inplace_add(self, arg) -> None:
+        #print here
+        second_term = self.code_stack.pop()
+        first_term = self.code_stack.pop()
+        self.code_stack.append(f'{first_term} += {second_term}')
+        self.instruction_stack.append(self.inplace_add)
+
+    def inplace_true_divide(self, arg) -> None:
+        #print here
+        divisor = self.code_stack.pop()
+        dividend = self.code_stack.pop()
+        self.code_stack.append(f'{dividend} /= {divisor}')
+        self.instruction_stack.append(self.inplace_true_divide)
+
+    def inplace_floor_divide(self, arg) -> None:
+        #print here
+        divisor = self.code_stack.pop()
+        dividend = self.code_stack.pop()
+        self.code_stack.append(f'{dividend} //= {divisor}')
+        self.instruction_stack.append(self.inplace_floor_divide)
+
+    def inplace_power(self, arg) -> None:
+        #print here
+        exponent = self.code_stack.pop()
+        base = self.code_stack.pop()
+        self.code_stack.append(f'{base} **= {exponent}')
+        self.instruction_stack.append(self.inplace_power)
+
+    def inplace_multiply(self, arg) -> None:
+        #print here
+        second_factor = self.code_stack.pop()
+        first_factor = self.code_stack.pop()
+        self.code_stack.append(f'{first_factor} *= {second_factor}')
+        self.instruction_stack.append(self.inplace_multiply)
+
+    def inplace_modulo(self, arg) -> None:
+        #print here
+        divisor = self.code_stack.pop()
+        dividend = self.code_stack.pop()
+        self.code_stack.append(f'{dividend} %= {divisor}')
+        self.instruction_stack.append(self.inplace_modulo)
+
+    def inplace_lshift(self, arg) -> None:
+        #print here
+        shift_value = self.code_stack.pop()
+        base_value = self.code_stack.pop()
+        self.code_stack.append(f'{base_value} <<= {shift_value}')
+        self.instruction_stack.append(self.inplace_lshift)
+
+    def inplace_rshift(self, arg) -> None:
+        #print here
+        shift_value = self.code_stack.pop()
+        base_value = self.code_stack.pop()
+        self.code_stack.append(f'{base_value} >>= {shift_value}')
+        self.instruction_stack.append(self.inplace_rshift)
+
+    def inplace_and(self, arg) -> None:
+        #print here
+        bits_2 = self.code_stack.pop()
+        bits_1 = self.code_stack.pop()
+        self.code_stack.append(f'{bits_1} &= {bits_2}')
+        self.instruction_stack.append(self.inplace_and)
+
+    def inplace_xor(self, arg) -> None:
+        #print here
+        bits_2 = self.code_stack.pop()
+        bits_1 = self.code_stack.pop()
+        self.code_stack.append(f'{bits_1} ^= {bits_2}')
+        self.instruction_stack.append(self.inplace_xor)
+
+    def inplace_or(self, arg) -> None:
+        #print here
+        bits_2 = self.code_stack.pop()
+        bits_1 = self.code_stack.pop()
+        self.code_stack.append(f'{bits_1} |= {bits_2}')
+        self.instruction_stack.append(self.inplace_or)
+
+    def inplace_matrix_multiply(self, arg) -> None:
+        #print here
+        second_factor = self.code_stack.pop()
+        first_factor = self.code_stack.pop()
+        self.code_stack.append(f'{first_factor} @= {second_factor}')
+        self.instruction_stack.append(self.inplace_matrix_multiply)
 

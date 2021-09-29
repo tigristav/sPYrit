@@ -48,8 +48,8 @@ class CodeParser:
                 self.match_opcode(byte, 0)
 
             counter += 2
-        if is_end and self.indentation == 0:
-            print(self.CODE_STACK.pop())
+    #    if is_end and self.indentation == 0:
+    #        print(f'last pop', self.CODE_STACK.pop())
 
     #    if is_end and self.INSTRUCTION_STACK[-2] == self.opcode.for_iter:
     #        self.indentation += 4
