@@ -35,6 +35,7 @@ class Opcode:
         self.DUP_TOP_TWO = self.dup_top
         self.EXTENDED_ARG = self.extended_arg
         self.POP_TOP = self.pop_top
+        self.NOP = self.nop
         self.ROT_TWO = self.rot_two
         self.ROT_THREE = self.rot_three
         self.ROT_FOUR = self.rot_four
@@ -111,6 +112,7 @@ class Opcode:
             'LIST_TO_TUPLE': self.LIST_TO_TUPLE,
             'BUILD_SET': self.BUILD_SET,
             'SET_UPDATE': self.SET_UPDATE,
+            'NOP': self.NOP,
             'POP_TOP': self.POP_TOP,
             'DUP_TOP': self.DUP_TOP,
             'DUP_TOP_TWO': self.DUP_TOP_TWO,
@@ -170,10 +172,15 @@ class Opcode:
         self.func_argcount = count
         self.func_argnames = list(names)
 
-    def pop_top(self, arg):
+    def pop_top(self, arg) -> int:
         # fix later maybe idk
     #    self.code_stack.insert(0, self.indentation)
+        self.instruction_stack.append(self.pop_top)
         return 0
+
+    def nop(self, arg) -> None:
+        self.instruction_stack.append(self.nop)
+        pass
 
     def rot_two(self, arg) -> None:
         # print here
