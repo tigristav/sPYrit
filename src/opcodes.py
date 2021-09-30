@@ -34,6 +34,9 @@ class Opcode:
         self.DUP_TOP = self.dup_top
         self.EXTENDED_ARG = self.extended_arg
         self.POP_TOP = self.pop_top
+        self.ROT_TWO = self.rot_two
+        self.ROT_THREE = self.rot_three
+        self.ROT_FOUR = self.rot_four
 
         self.COMPARE_OP = self.compare_op
         self.IS_OP = self.is_op
@@ -110,6 +113,9 @@ class Opcode:
             'POP_TOP': self.POP_TOP,
             'DUP_TOP': self.DUP_TOP,
             'EXTENDED_ARG': self.EXTENDED_ARG,
+            'ROT_TWO': self.rot_two,
+            'ROT_THREE': self.rot_three,
+            'ROT_FOUR': self.rot_four,
 
             'COMPARE_OP': self.COMPARE_OP,
             'IS_OP': self.IS_OP,
@@ -167,6 +173,21 @@ class Opcode:
     #    self.code_stack.insert(0, self.indentation)
         return 0
 
+    def rot_two(self, arg) -> None:
+        #print here
+        self.code_stack[-1], self.code_stack[-2] = self.code_stack[-2], self.code_stack[-1]
+        self.instruction_stack.append(self.rot_two)
+
+    def rot_three(self, arg) -> None:
+        #print here
+        self.code_stack[-1], self.code_stack[-2], self.code_stack[-3] = self.code_stack[-2], self.code_stack[-3], self.code_stack[-1]
+        self.instruction_stack.append(self.rot_three)
+
+    def rot_four(self, arg) -> None:
+        #print here
+        self.code_stack[-1], self.code_stack[-2], self.code_stack[-3], self.code_stack[-4] = self.code_stack[-2], self.code_stack[-3], self.code_stack[-4], self.code_stack[-1]
+        self.instruction_stack.append(self.rot_four)
+        
     def load_const(self, arg) -> object:
         #print(f'LOAD_CONST {self.content.co_consts[arg]}')
         if isinstance(self.content.co_consts[arg], str):
