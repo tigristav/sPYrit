@@ -42,6 +42,7 @@ class Opcode:
 
         self.COMPARE_OP = self.compare_op
         self.IS_OP = self.is_op
+        self.CONTAINS_OP = self.contains_op
 
         self.POP_JUMP_IF_TRUE = self.pop_jump_if_true
         self.POP_JUMP_IF_FALSE = self.pop_jump_if_false
@@ -123,6 +124,7 @@ class Opcode:
 
             'COMPARE_OP': self.COMPARE_OP,
             'IS_OP': self.IS_OP,
+            'CONTAINS_OP': self.CONTAINS_OP,
 
             'POP_JUMP_IF_TRUE': self.POP_JUMP_IF_TRUE,
             'POP_JUMP_IF_FALSE': self.POP_JUMP_IF_FALSE,
@@ -522,6 +524,16 @@ class Opcode:
         else:
             self.code_stack.append(f'{left_side} is not {right_side}')
         self.instruction_stack.append(self.is_op)
+
+    def contains_op(self, arg) -> None:
+        # print here
+        right_side = self.code_stack.pop()
+        left_side = self.code_stack.pop()
+        if arg == 0:
+            self.code_stack.append(f'{left_side} in {right_side}')
+        else:
+            self.code_stack.append(f'{left_side} not in {right_side}')
+        self.instruction_stack.append(self.contains_op)
 
     def pop_jump_if_true(self, arg) -> None:
         self.instruction_stack.append(self.pop_jump_if_true)
