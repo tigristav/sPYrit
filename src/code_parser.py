@@ -2,6 +2,7 @@
 from opcodes import Opcode
 import types
 
+# NOTE to self: when comparing something with INSTRUCTION_STACK content, == not is
 
 class CodeParser:
     def __init__(self, code_obj, opc_map, indentation=0):
@@ -73,8 +74,7 @@ class CodeParser:
         opc = self.opcode_map.get(instruction)
         if self.opcode.opcode.get(opc, None) is not None:
         #    print(f'{opc} {argument}')
-            if self.opcode.opcode.get(opc, None) is not None and \
-                    self.opcode.opcode.get(opc, None) is self.opcode.opcode.get('MAKE_FUNCTION') and \
+            if self.opcode.opcode.get(opc, None) is self.opcode.opcode.get('MAKE_FUNCTION') and \
                     len(self.RETURNED_ARGS) > 0:
                 self.opcode.update_func_args(self.RETURNED_ARGS.pop(), self.RETURNED_ARGS.pop())
             result = self.opcode.opcode.get(opc, None)(argument)
