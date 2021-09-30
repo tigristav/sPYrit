@@ -32,6 +32,7 @@ class Opcode:
         self.BUILD_SET = self.build_set
         self.SET_UPDATE = self.set_update
         self.DUP_TOP = self.dup_top
+        self.DUP_TOP_TWO = self.dup_top
         self.EXTENDED_ARG = self.extended_arg
         self.POP_TOP = self.pop_top
         self.ROT_TWO = self.rot_two
@@ -112,6 +113,7 @@ class Opcode:
             'SET_UPDATE': self.SET_UPDATE,
             'POP_TOP': self.POP_TOP,
             'DUP_TOP': self.DUP_TOP,
+            'DUP_TOP_TWO': self.DUP_TOP_TWO,
             'EXTENDED_ARG': self.EXTENDED_ARG,
             'ROT_TWO': self.rot_two,
             'ROT_THREE': self.rot_three,
@@ -162,32 +164,32 @@ class Opcode:
         return opc
 
     def update_func_args(self, names, count) -> None:
-        #if we just send the names as arguments, argcount is redundant since
-        #we can extract the required amount of names before calling this function
-        #but mvp in the works so it will wait
+        # if we just send the names as arguments, argcount is redundant since
+        # we can extract the required amount of names before calling this function
+        # but mvp in the works so it will wait
         self.func_argcount = count
         self.func_argnames = list(names)
 
     def pop_top(self, arg):
-        #fix later maybe idk
+        # fix later maybe idk
     #    self.code_stack.insert(0, self.indentation)
         return 0
 
     def rot_two(self, arg) -> None:
-        #print here
+        # print here
         self.code_stack[-1], self.code_stack[-2] = self.code_stack[-2], self.code_stack[-1]
         self.instruction_stack.append(self.rot_two)
 
     def rot_three(self, arg) -> None:
-        #print here
+        # print here
         self.code_stack[-1], self.code_stack[-2], self.code_stack[-3] = self.code_stack[-2], self.code_stack[-3], self.code_stack[-1]
         self.instruction_stack.append(self.rot_three)
 
     def rot_four(self, arg) -> None:
-        #print here
+        # print here
         self.code_stack[-1], self.code_stack[-2], self.code_stack[-3], self.code_stack[-4] = self.code_stack[-2], self.code_stack[-3], self.code_stack[-4], self.code_stack[-1]
         self.instruction_stack.append(self.rot_four)
-        
+
     def load_const(self, arg) -> object:
         #print(f'LOAD_CONST {self.content.co_consts[arg]}')
         if isinstance(self.content.co_consts[arg], str):
@@ -198,7 +200,7 @@ class Opcode:
         return self.content.co_consts[arg]
 
     def store_name(self, arg) -> None:
-        #print(f'STORE_NAME {self.content.co_names[arg]}')
+        # print(f'STORE_NAME {self.content.co_names[arg]}')
         if self.instruction_stack[-1] == self.make_function:
             self.code_stack.append('')
         elif self.instruction_stack[-1] == self.get_iter or self.instruction_stack[-1] == self.for_iter: # for loopie
@@ -219,36 +221,36 @@ class Opcode:
         self.instruction_stack.append(self.store_name)
 
     def load_name(self, arg) -> None:
-        #print(f'LOAD_NAME {self.content.co_names[arg]}')
+        # print(f'LOAD_NAME {self.content.co_names[arg]}')
         self.code_stack.append(self.content.co_names[arg])
         self.instruction_stack.append(self.load_name)
 
     def load_global(self, arg) -> None:
-        #print(f'LOAD_GLOBAL {self.content.co_names[arg]}')
+        # print(f'LOAD_GLOBAL {self.content.co_names[arg]}')
         self.code_stack.append(self.content.co_names[arg])
         self.instruction_stack.append(self.load_global)
 
     def store_global(self, arg) -> None:
-        #print(f'STORE_GLOBAL {self.content.co_names[arg]}')
+        # print(f'STORE_GLOBAL {self.content.co_names[arg]}')
         self.code_stack.append(f'{self.content.co_names[arg]} = ')
         self.instruction_stack.append(self.store_global)
 
     def store_fast(self, arg) -> None:
-        #print(f'STORE_FAST {arg}')
+        # print(f'STORE_FAST {arg}')
     #    self.code_stack.append(f'{self.indentation}' + f'{self.content.co_varnames[arg]} = ')
         self.code_stack.append(f'{self.content.co_varnames[arg]} = ')
         self.instruction_stack.append(self.store_fast)
 
     def load_fast(self, arg) -> None:
-        #print(f'LOAD_FAST {self.content.co_varnames[arg]}')
+        # print(f'LOAD_FAST {self.content.co_varnames[arg]}')
         self.code_stack.append(f'{self.content.co_varnames[arg]}')
         self.instruction_stack.append(self.load_fast)
 
     def make_function(self, arg) -> None:
-        #print(f'MAKE_FUNCTION {arg}')
+        # print(f'MAKE_FUNCTION {arg}')
         function_name = self.code_stack.pop()
         code_obj = self.code_stack.pop()
-        #print(f'code object?? {code_obj}')
+        # print(f'code object?? {code_obj}')
         if '\'' in function_name:
             function_name = function_name[1:-1]
         if self.func_argcount > 0:
@@ -267,14 +269,14 @@ class Opcode:
                     counter += 1
                 else:
                     args_list.append(self.func_argnames.pop())
-            args_list.reverse() #can insert at 0 instead of this
+            args_list.reverse() # can insert at 0 instead of this
             self.code_stack.append(f'def {function_name}({", ".join(args_list)}):')
         else:
             self.code_stack.append(f'def {function_name}({""}):')
         self.instruction_stack.append(self.make_function)
 
     def call_function(self, arg) -> None:
-        #print(f'CALL_FUNCTION {self.code_stack[-(arg+1)]}')
+        # print(f'CALL_FUNCTION {self.code_stack[-(arg+1)]}')
         if self.instruction_stack[-1] != self.LIST_EXTEND:
             pos_arg = []
             for args in range(0, arg):
@@ -286,7 +288,7 @@ class Opcode:
             else:
                 str_content = ''
                 for item in pos_arg:
-                    #print(f'ITEM:{item} TYPE:{type(item)}')
+                    # print(f'ITEM:{item} TYPE:{type(item)}')
                     str_content += f'{str(item)}, '
                 str_content = str_content[:-2]
                 self.code_stack.append(f'{function_name}({str_content})')
@@ -307,7 +309,7 @@ class Opcode:
         self.instruction_stack.append(self.call_function)
 
     def call_function_kw(self, arg) -> None:
-        #print here
+        # print here
         arg_total = arg
         kw_names = self.code_stack.pop() # tuple elements must be strings
         kw_args = []
@@ -391,7 +393,7 @@ class Opcode:
         pass
 
     def store_subscr(self, arg) -> None:
-        #print here
+        # print here
         index = self.code_stack.pop()
         container = self.code_stack.pop()
         value = self.code_stack.pop()
@@ -399,7 +401,7 @@ class Opcode:
         self.instruction_stack.append(self.store_subscr)
 
     def build_list(self, arg) -> None:
-        #print(f'BUILD_LIST {arg}')
+        # print(f'BUILD_LIST {arg}')
         if arg == 0:
             self.code_stack.append('[]')
         else:
@@ -415,7 +417,7 @@ class Opcode:
         self.instruction_stack.append(self.build_list)
 
     def list_extend(self, arg) -> None:
-        #print(f'LIST_EXTEND {self.code_stack[-arg]}')
+        # print(f'LIST_EXTEND {self.code_stack[-arg]}')
         if '[]' in self.code_stack:
             self.code_stack.reverse()
             self.code_stack.remove('[]')
@@ -425,7 +427,7 @@ class Opcode:
         self.instruction_stack.append(self.list_extend)
 
     def build_tuple(self, arg) -> None:
-        #print here
+        # print here
         if arg == 0:
             self.code_stack.append('()')
         else:
@@ -444,13 +446,13 @@ class Opcode:
         self.instruction_stack.append(self.build_tuple)
 
     def list_to_tuple(self, arg) -> None:
-        #print here
+        # print here
         old_list = self.code_stack.pop()
         self.code_stack.append(tuple(old_list))
         self.instruction_stack.append(self.list_to_tuple)
 
     def build_set(self, arg) -> None:
-        #print here
+        # print here
         if arg == 0:
             self.code_stack.append('{}')
         else:
@@ -481,15 +483,23 @@ class Opcode:
         self.instruction_stack.append(self.set_update)
 
     def dup_top(self, arg) -> None:
-        #print here
+        # print here
         self.code_stack.append(self.code_stack[-1])
         self.instruction_stack.append(self.dup_top)
+
+    def dup_top_two(self, arg) -> None:
+        # print here
+        # "Duplicates the two references on top of the stack, leaving them in the same order."
+        # Assuming its the tos and tos1 but unclear what the docs mean since there can only be one on top of stack...
+        self.code_stack.append(self.code_stack[-2])
+        self.code_stack.append(self.code_stack[-1])
+        self.instruction_stack.append()
 
     def extended_arg(self, arg) -> None:
         pass
 
     def compare_op(self, arg) -> None:
-        #print here
+        # print here
         op = self.cmp_op[arg]
         right_side = self.code_stack.pop()
         left_side = self.code_stack.pop()
@@ -497,7 +507,7 @@ class Opcode:
         self.instruction_stack.append(self.compare_op)
 
     def is_op(self, arg) -> None:
-        #print here
+        # print here
         right_side = self.code_stack.pop()
         left_side = self.code_stack.pop()
         if arg == 0:
@@ -538,21 +548,21 @@ class Opcode:
         pass
 
     def load_attr(self, arg) -> None:
-        #print here
+        # print here
         attr = self.content.co_names[arg]
         parent = self.code_stack.pop()
         self.code_stack.append(f'{parent}.{attr}')
         self.instruction_stack.append(self.load_attr)
 
     def load_method(self, arg) -> None:
-        #print here
+        # print here
         name = self.content.co_names[arg]
         tos = self.code_stack.pop()
         self.code_stack.append(f'{tos}.{name}')
         self.instruction_stack.append(self.load_method)
 
     def call_method(self, arg) -> None:
-        #print here
+        # print here
         arguments = []
         for _ in range(0, arg):
             arguments.append(self.code_stack.pop())
@@ -653,98 +663,98 @@ class Opcode:
         self.instruction_stack.append(self.binary_or)
 
     def binary_matrix_multiply(self, arg) -> None:
-        #print here
+        # print here
         second_factor = self.code_stack.pop()
         first_factor = self.code_stack.pop()
         self.code_stack.append(f'{first_factor} @ {second_factor}')
         self.instruction_stack.append(self.binary_matrix_multiply)
 
     def inplace_subtract(self, arg) -> None:
-        #print here
+        # print here
         second_term = self.code_stack.pop()
         first_term = self.code_stack.pop()
         self.code_stack.append(f'{first_term} *= {second_term}')
         self.instruction_stack.append(self.inplace_subtract)
 
     def inplace_add(self, arg) -> None:
-        #print here
+        # print here
         second_term = self.code_stack.pop()
         first_term = self.code_stack.pop()
         self.code_stack.append(f'{first_term} += {second_term}')
         self.instruction_stack.append(self.inplace_add)
 
     def inplace_true_divide(self, arg) -> None:
-        #print here
+        # print here
         divisor = self.code_stack.pop()
         dividend = self.code_stack.pop()
         self.code_stack.append(f'{dividend} /= {divisor}')
         self.instruction_stack.append(self.inplace_true_divide)
 
     def inplace_floor_divide(self, arg) -> None:
-        #print here
+        # print here
         divisor = self.code_stack.pop()
         dividend = self.code_stack.pop()
         self.code_stack.append(f'{dividend} //= {divisor}')
         self.instruction_stack.append(self.inplace_floor_divide)
 
     def inplace_power(self, arg) -> None:
-        #print here
+        # print here
         exponent = self.code_stack.pop()
         base = self.code_stack.pop()
         self.code_stack.append(f'{base} **= {exponent}')
         self.instruction_stack.append(self.inplace_power)
 
     def inplace_multiply(self, arg) -> None:
-        #print here
+        # print here
         second_factor = self.code_stack.pop()
         first_factor = self.code_stack.pop()
         self.code_stack.append(f'{first_factor} *= {second_factor}')
         self.instruction_stack.append(self.inplace_multiply)
 
     def inplace_modulo(self, arg) -> None:
-        #print here
+        # print here
         divisor = self.code_stack.pop()
         dividend = self.code_stack.pop()
         self.code_stack.append(f'{dividend} %= {divisor}')
         self.instruction_stack.append(self.inplace_modulo)
 
     def inplace_lshift(self, arg) -> None:
-        #print here
+        # print here
         shift_value = self.code_stack.pop()
         base_value = self.code_stack.pop()
         self.code_stack.append(f'{base_value} <<= {shift_value}')
         self.instruction_stack.append(self.inplace_lshift)
 
     def inplace_rshift(self, arg) -> None:
-        #print here
+        # print here
         shift_value = self.code_stack.pop()
         base_value = self.code_stack.pop()
         self.code_stack.append(f'{base_value} >>= {shift_value}')
         self.instruction_stack.append(self.inplace_rshift)
 
     def inplace_and(self, arg) -> None:
-        #print here
+        # print here
         bits_2 = self.code_stack.pop()
         bits_1 = self.code_stack.pop()
         self.code_stack.append(f'{bits_1} &= {bits_2}')
         self.instruction_stack.append(self.inplace_and)
 
     def inplace_xor(self, arg) -> None:
-        #print here
+        # print here
         bits_2 = self.code_stack.pop()
         bits_1 = self.code_stack.pop()
         self.code_stack.append(f'{bits_1} ^= {bits_2}')
         self.instruction_stack.append(self.inplace_xor)
 
     def inplace_or(self, arg) -> None:
-        #print here
+        # print here
         bits_2 = self.code_stack.pop()
         bits_1 = self.code_stack.pop()
         self.code_stack.append(f'{bits_1} |= {bits_2}')
         self.instruction_stack.append(self.inplace_or)
 
     def inplace_matrix_multiply(self, arg) -> None:
-        #print here
+        # print here
         second_factor = self.code_stack.pop()
         first_factor = self.code_stack.pop()
         self.code_stack.append(f'{first_factor} @= {second_factor}')
