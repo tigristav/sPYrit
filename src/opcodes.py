@@ -217,8 +217,8 @@ class Opcode:
         elif self.instruction_stack[-1] in {self.INPLACE_MULTIPLY, self.INPLACE_ADD, self.INPLACE_SUBTRACT,
                                             self.INPLACE_ADD, self.INPLACE_TRUE_DIVIDE,self.INPLACE_FLOOR_DIVIDE,
                                             self.INPLACE_POWER, self.INPLACE_MULTIPLY, self.INPLACE_MODULO,
-                                            self.INPLACE_LSHIFT, self.INPLACE_RSHIFT, self.INPLACE_AND, self.INPLACE_XOR,
-                                            self.INPLACE_OR, self.INPLACE_MATRIX_MULTIPLY}:
+                                            self.INPLACE_LSHIFT, self.INPLACE_RSHIFT, self.INPLACE_AND,
+                                            self.INPLACE_XOR, self.INPLACE_OR, self.INPLACE_MATRIX_MULTIPLY}:
             pass
         elif len(self.code_stack) > 0 and not isinstance(self.code_stack[-1], int) and self.code_stack[-1] is not None and 'from' in self.code_stack[-1]:
             self.code_stack.append(f' import {self.content.co_names[arg]}')

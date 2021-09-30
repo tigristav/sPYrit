@@ -19,8 +19,8 @@
 ## Table of Contents
 - [Dependencies](#Dependencies)
 - [Installation](#Installation)
-- [Usage](#Usage)
-- [List of instructions](#List_of_available_instructions)
+<!--- [Usage](#Usage)
+- [List of instructions](#List_of_available_instructions)-->
 
 
 ## Dependencies
@@ -29,7 +29,14 @@ None as of yet. Only requirement is python version 3.9.
 ## Installation
 1. Download or fetch the repo
 
-## Usage
+## Not yet implemented
+- Coroutines
+- List/Set/Dict comprehensions
+- Classes
+- Unary operators
+- Loops
+
+<!--## Usage
 ```py
 
 
@@ -37,4 +44,4 @@ None as of yet. Only requirement is python version 3.9.
 
 ## List of available instructions
 
-
+-->
