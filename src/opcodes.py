@@ -34,6 +34,8 @@ class Opcode:
         self.DUP_TOP = self.dup_top
         self.DUP_TOP_TWO = self.dup_top
         self.EXTENDED_ARG = self.extended_arg
+        self.FORMAT_VALUE = self.format_value
+        self.BUILD_STRING = self.build_string
         self.POP_TOP = self.pop_top
         self.NOP = self.nop
         self.ROT_TWO = self.rot_two
@@ -118,6 +120,8 @@ class Opcode:
             'DUP_TOP': self.DUP_TOP,
             'DUP_TOP_TWO': self.DUP_TOP_TWO,
             'EXTENDED_ARG': self.EXTENDED_ARG,
+            'FORMAT_VALUE': self.FORMAT_VALUE,
+            'BUILD_STRING': self.BUILD_STRING,
             'ROT_TWO': self.rot_two,
             'ROT_THREE': self.rot_three,
             'ROT_FOUR': self.rot_four,
@@ -507,6 +511,38 @@ class Opcode:
     def extended_arg(self, arg) -> None:
         pass
 
+    def format_value(self, arg) -> None:
+        # print here
+        # implementation of more flags will occur when I can find some code that uses it
+        value = self.code_stack.pop()
+        if (arg & 0x03) == 0x00:
+            if isinstance(value, str) and '\'' in value or '\"' in value:
+                self.code_stack.append(f'{{\"{value[1:-1]}\"}}')
+            else:
+                self.code_stack.append(f'{{{value}}}')
+        elif (arg & 0x03) == 0x01:
+        #    self.code_stack.append(f'{{{value}}}')
+            self.code_stack.append(f'\"{str(value)}\"')
+        elif (arg & 0x03) == 0x02:
+            pass
+        elif (arg & 0x03) == 0x03:
+            pass
+        self.instruction_stack.append(self.format_value)
+
+    def build_string(self, arg) -> None:
+        # print here
+        items = []
+        print('build string')
+        print(self.code_stack)
+        for index in range(1, arg+1):
+            if isinstance(self.code_stack[-1], str) and '\'' in self.code_stack[-1]:
+                items.append(self.code_stack.pop()[1:-1])
+            else:
+                items.append(self.code_stack.pop())
+        items.reverse()
+        self.code_stack.append(f'f\'{"".join(items)}\'')
+        self.instruction_stack.append(self.build_string)
+
     def compare_op(self, arg) -> None:
         # print here
         op = self.cmp_op[arg]
@@ -556,8 +592,8 @@ class Opcode:
         pass
 
     def jump_absolute(self, arg) -> None:
-        print(f'stack')
-        print(self.code_stack)
+    #    print(f'stack')
+    #    print(self.code_stack)
     #    self.indentation = self.indentation[:-4]
         self.instruction_stack.append(self.jump_absolute)
         pass
