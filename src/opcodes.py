@@ -218,8 +218,6 @@ class Opcode:
             self.code_stack.append('')
         elif self.instruction_stack[-1] == self.get_iter or self.instruction_stack[-1] == self.for_iter: # for loopie
             self.code_stack.append(f'for {self.content.co_names[arg]} in ')
-        #    self.code_stack.append(f'{self.indentation}' + f'for {self.content.co_names[arg]} in ')
-    #        self.indentation = self.indentation + (4 * ' ')
         elif self.instruction_stack[-1] in {self.INPLACE_MULTIPLY, self.INPLACE_ADD, self.INPLACE_SUBTRACT,
                                             self.INPLACE_ADD, self.INPLACE_TRUE_DIVIDE,self.INPLACE_FLOOR_DIVIDE,
                                             self.INPLACE_POWER, self.INPLACE_MULTIPLY, self.INPLACE_MODULO,
@@ -594,7 +592,7 @@ class Opcode:
     def jump_absolute(self, arg) -> None:
     #    print(f'stack')
     #    print(self.code_stack)
-    #    self.indentation = self.indentation[:-4]
+        self.indentation = self.indentation[:-4]
         self.instruction_stack.append(self.jump_absolute)
         pass
 
@@ -621,6 +619,12 @@ class Opcode:
         arguments = []
         for _ in range(0, arg):
             arguments.append(self.code_stack.pop())
+        #Attempt to fix list as arguments, tabled for now will revisit after parser rework
+    #    if any(isinstance(n, list) for n in arguments):
+    #        print('yas')
+    #        for index, element in enumerate(arguments):
+    #            if isinstance(element, list):
+    #                arguments[index] = f'[{", ".join(element)}]'
         arguments = [str(x) if x is None or isinstance(x, (int, float)) else '\'' + x + '\'' for x in arguments]
         method = self.code_stack.pop()
         self.code_stack.append(f'{method}' + '(' + f'{", ".join(reversed(arguments))}' + ')')

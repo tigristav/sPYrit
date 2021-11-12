@@ -10,10 +10,12 @@ class CodeParser:
         self.indentation = indentation
         self.CODE_STACK = []
         self.INSTRUCTION_STACK = []
+        self.MASTER_STACK = []
         self.OUTPUT_STRING = ''
         self.RETURNED_STRING = ''
         self.RETURNED_ARGS = []
         self.function_lines = 0
+        self.loop_indent = 0
         self.HAS_ARGUMENT = 90
         self.opcode = Opcode(self.content, self.CODE_STACK, self.INSTRUCTION_STACK, indentation)
         self.opcode_map = opc_map
@@ -27,7 +29,7 @@ class CodeParser:
                 start_line += num
             else:
     #            print(f'{[x.__name__ for x in self.INSTRUCTION_STACK]}')
-                if len(self.INSTRUCTION_STACK) > 1 and (self.INSTRUCTION_STACK[-2] is self.opcode.MAKE_FUNCTION or self.INSTRUCTION_STACK[-2].__name__ == 'make_function'):
+                if len(self.MASTER_STACK) > 1 and (self.MASTER_STACK[-2] is self.opcode.MAKE_FUNCTION or self.MASTER_STACK[-2].__name__ == 'make_function'):
                     modified_num = num - self.function_lines
                     self.OUTPUT_STRING += '\n'*modified_num
                 else:
@@ -92,16 +94,22 @@ class CodeParser:
         #    if self.INSTRUCTION_STACK[-1] is not self.opcode.opcode.get('MAKE_FUNCTION', None) and \
         #            self.INSTRUCTION_STACK[-3] is not self.opcode.opcode.get('MAKE_FUNCTION', None) \
         #            and self.INSTRUCTION_STACK[-4] is not self.opcode.opcode.get('MAKE_FUNCTION', None):
-        self.opcode.indentation = self.indentation * ' '
         self.OUTPUT_STRING += self.indentation * ' '
         while len(self.CODE_STACK) != 0:
             if self.CODE_STACK[-1] is not None:
-                self.OUTPUT_STRING += str(self.CODE_STACK.pop())
+                self.OUTPUT_STRING += (self.loop_indent * ' ') + str(self.CODE_STACK.pop())
             else:
-                self.OUTPUT_STRING += str(self.CODE_STACK.pop())
+                self.OUTPUT_STRING += (self.loop_indent * ' ') + str(self.CODE_STACK.pop())
         #        self.CODE_STACK.pop()
         if self.OUTPUT_STRING[-3:].isspace():
             self.OUTPUT_STRING = self.OUTPUT_STRING[0:len(self.OUTPUT_STRING)-4]
+
+        if self.opcode.opcode.get("FOR_ITER") in self.INSTRUCTION_STACK:
+            self.loop_indent += 4
+        elif self.opcode.opcode.get("JUMP_ABSOLUTE") in self.INSTRUCTION_STACK:
+            self.loop_indent -= 4
+        self.MASTER_STACK.extend(self.INSTRUCTION_STACK)
+        self.INSTRUCTION_STACK.clear()
 
     def get_output(self):
         return self.OUTPUT_STRING
