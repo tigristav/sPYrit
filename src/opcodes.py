@@ -574,9 +574,9 @@ class Opcode:
         pass
 
     def pop_jump_if_false(self, arg) -> None:
-    #    self.indentation = self.indentation + (4 * ' ')
+        if self.instruction_stack[-1] == self.compare_op:
+            self.code_stack.append(f'while {self.code_stack.pop()}:')
         self.instruction_stack.append(self.pop_jump_if_false)
-        pass
 
     def get_iter(self, arg) -> None:
         if self.instruction_stack[-1] == self.call_function or self.instruction_stack[-1] == self.call_function_kw:

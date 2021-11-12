@@ -95,16 +95,19 @@ class CodeParser:
         #            self.INSTRUCTION_STACK[-3] is not self.opcode.opcode.get('MAKE_FUNCTION', None) \
         #            and self.INSTRUCTION_STACK[-4] is not self.opcode.opcode.get('MAKE_FUNCTION', None):
         self.OUTPUT_STRING += self.indentation * ' '
+        self.OUTPUT_STRING += self.loop_indent * ' '
         while len(self.CODE_STACK) != 0:
             if self.CODE_STACK[-1] is not None:
-                self.OUTPUT_STRING += (self.loop_indent * ' ') + str(self.CODE_STACK.pop())
+                self.OUTPUT_STRING += str(self.CODE_STACK.pop())
             else:
-                self.OUTPUT_STRING += (self.loop_indent * ' ') + str(self.CODE_STACK.pop())
+                self.OUTPUT_STRING += str(self.CODE_STACK.pop())
         #        self.CODE_STACK.pop()
         if self.OUTPUT_STRING[-3:].isspace():
             self.OUTPUT_STRING = self.OUTPUT_STRING[0:len(self.OUTPUT_STRING)-4]
 
-        if self.opcode.opcode.get("FOR_ITER") in self.INSTRUCTION_STACK:
+        if self.opcode.opcode.get("FOR_ITER") in self.INSTRUCTION_STACK or \
+                (self.opcode.opcode.get("POP_JUMP_IF_FALSE") in self.INSTRUCTION_STACK and self.opcode.opcode.get("COMPARE_OP") in self.INSTRUCTION_STACK) or \
+                (self.opcode.opcode.get("POP_JUMP_IF_TRUE") in self.INSTRUCTION_STACK and self.opcode.opcode.get("COMPARE_OP") in self.INSTRUCTION_STACK):
             self.loop_indent += 4
         elif self.opcode.opcode.get("JUMP_ABSOLUTE") in self.INSTRUCTION_STACK:
             self.loop_indent -= 4
