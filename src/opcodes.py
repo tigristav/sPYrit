@@ -590,11 +590,14 @@ class Opcode:
         pass
 
     def jump_absolute(self, arg) -> None:
+        if len(self.instruction_stack) != 0 and self.instruction_stack[-1] == self.jump_absolute:
+            self.code_stack.append("break")
+        else:
     #    print(f'stack')
     #    print(self.code_stack)
-        self.indentation = self.indentation[:-4]
-        self.instruction_stack.append(self.jump_absolute)
-        pass
+            self.indentation = self.indentation[:-4]
+            self.instruction_stack.append(self.jump_absolute)
+
 
     def jump_forward(self, arg) -> None:
         self.instruction_stack.append(self.jump_forward)

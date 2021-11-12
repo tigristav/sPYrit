@@ -111,6 +111,8 @@ class CodeParser:
             self.loop_indent += 4
         elif self.opcode.opcode.get("JUMP_ABSOLUTE") in self.INSTRUCTION_STACK:
             self.loop_indent -= 4
+            if self.loop_indent < 0:
+                self.loop_indent = 0
         self.MASTER_STACK.extend(self.INSTRUCTION_STACK)
         self.INSTRUCTION_STACK.clear()
 
