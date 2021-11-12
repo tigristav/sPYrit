@@ -15,7 +15,7 @@ class CodeParser:
         self.RETURNED_STRING = ''
         self.RETURNED_ARGS = []
         self.function_lines = 0
-        self.loop_indent = 0
+        self.statement_indent = 0
         self.HAS_ARGUMENT = 90
         self.opcode = Opcode(self.content, self.CODE_STACK, self.INSTRUCTION_STACK, indentation)
         self.opcode_map = opc_map
@@ -95,7 +95,7 @@ class CodeParser:
         #            self.INSTRUCTION_STACK[-3] is not self.opcode.opcode.get('MAKE_FUNCTION', None) \
         #            and self.INSTRUCTION_STACK[-4] is not self.opcode.opcode.get('MAKE_FUNCTION', None):
         self.OUTPUT_STRING += self.indentation * ' '
-        self.OUTPUT_STRING += self.loop_indent * ' '
+        self.OUTPUT_STRING += self.statement_indent * ' '
         while len(self.CODE_STACK) != 0:
             if self.CODE_STACK[-1] is not None:
                 self.OUTPUT_STRING += str(self.CODE_STACK.pop())
@@ -108,11 +108,11 @@ class CodeParser:
         if self.opcode.opcode.get("FOR_ITER") in self.INSTRUCTION_STACK or \
                 (self.opcode.opcode.get("POP_JUMP_IF_FALSE") in self.INSTRUCTION_STACK and self.opcode.opcode.get("COMPARE_OP") in self.INSTRUCTION_STACK) or \
                 (self.opcode.opcode.get("POP_JUMP_IF_TRUE") in self.INSTRUCTION_STACK and self.opcode.opcode.get("COMPARE_OP") in self.INSTRUCTION_STACK):
-            self.loop_indent += 4
+            self.statement_indent += 4
         elif self.opcode.opcode.get("JUMP_ABSOLUTE") in self.INSTRUCTION_STACK:
-            self.loop_indent -= 4
-            if self.loop_indent < 0:
-                self.loop_indent = 0
+            self.statement_indent -= 4
+            if self.statement_indent < 0:
+                self.statement_indent = 0
         self.MASTER_STACK.extend(self.INSTRUCTION_STACK)
         self.INSTRUCTION_STACK.clear()
 

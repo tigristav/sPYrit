@@ -249,7 +249,10 @@ class Opcode:
     def store_fast(self, arg) -> None:
         # print(f'STORE_FAST {arg}')
     #    self.code_stack.append(f'{self.indentation}' + f'{self.content.co_varnames[arg]} = ')
-        self.code_stack.append(f'{self.content.co_varnames[arg]} = ')
+        if self.instruction_stack[-1] == self.get_iter or self.instruction_stack[-1] == self.for_iter: # for loopie
+            self.code_stack.append(f'for {self.content.co_varnames[arg]} in ')
+        else:
+            self.code_stack.append(f'{self.content.co_varnames[arg]} = ')
         self.instruction_stack.append(self.store_fast)
 
     def load_fast(self, arg) -> None:
