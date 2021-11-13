@@ -204,7 +204,7 @@ class Opcode:
         self.instruction_stack.append(self.rot_four)
 
     def load_const(self, arg) -> object:
-        #print(f'LOAD_CONST {self.content.co_consts[arg]}')
+        print(f'LOAD_CONST {self.content.co_consts[arg]}')
         if isinstance(self.content.co_consts[arg], str):
             self.code_stack.append(f'\'{self.content.co_consts[arg]}\'')
         else:
@@ -225,19 +225,21 @@ class Opcode:
                                             self.INPLACE_XOR, self.INPLACE_OR, self.INPLACE_MATRIX_MULTIPLY}:
             pass
         elif len(self.code_stack) > 0 and not isinstance(self.code_stack[-1], int) and self.code_stack[-1] is not None and 'from' in self.code_stack[-1]:
-            self.code_stack.append(f' import {self.content.co_names[arg]}')
+            if 'import' not in self.code_stack[-1]:
+                #self.code_stack.append(f'import {self.content.co_names[arg]}')
+                self.code_stack.append(f'import {self.code_stack.pop()[5:]}')
         else:
             self.code_stack.append(f'{self.indentation}' + f'{self.content.co_names[arg]} = ')
 
         self.instruction_stack.append(self.store_name)
 
     def load_name(self, arg) -> None:
-        # print(f'LOAD_NAME {self.content.co_names[arg]}')
+        print(f'LOAD_NAME {self.content.co_names[arg]}')
         self.code_stack.append(self.content.co_names[arg])
         self.instruction_stack.append(self.load_name)
 
     def load_global(self, arg) -> None:
-        # print(f'LOAD_GLOBAL {self.content.co_names[arg]}')
+        print(f'LOAD_GLOBAL {self.content.co_names[arg]}')
         self.code_stack.append(self.content.co_names[arg])
         self.instruction_stack.append(self.load_global)
 
@@ -256,7 +258,7 @@ class Opcode:
         self.instruction_stack.append(self.store_fast)
 
     def load_fast(self, arg) -> None:
-        # print(f'LOAD_FAST {self.content.co_varnames[arg]}')
+        print(f'LOAD_FAST {self.content.co_varnames[arg]}')
         self.code_stack.append(f'{self.content.co_varnames[arg]}')
         self.instruction_stack.append(self.load_fast)
 
@@ -325,6 +327,7 @@ class Opcode:
     def call_function_kw(self, arg) -> None:
         # print here
         arg_total = arg
+        print(f'STACK IN KW: {self.code_stack}')
         kw_names = self.code_stack.pop() # tuple elements must be strings
         kw_args = []
         for index in range(0, len(kw_names)):
@@ -371,8 +374,9 @@ class Opcode:
 
     def import_from(self, arg) -> None:
         #print(f'IMPORT_FROM {self.content.co_names[arg]}')
+        name_module = self.code_stack.pop()
+        self.code_stack.append(f'{name_module} import {self.content.co_names[arg]}')
         self.instruction_stack.append(self.import_from)
-        pass
 
     def build_map(self, arg) -> None:
         #print(f'BUILD_MAP {arg}')
@@ -578,6 +582,8 @@ class Opcode:
 
     def pop_jump_if_false(self, arg) -> None:
         if self.instruction_stack[-1] == self.compare_op:
+            self.code_stack.append(f'while {self.code_stack.pop()}:')
+        elif self.instruction_stack[-1] == self.load_fast:
             self.code_stack.append(f'while {self.code_stack.pop()}:')
         self.instruction_stack.append(self.pop_jump_if_false)
 

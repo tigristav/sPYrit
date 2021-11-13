@@ -16,6 +16,7 @@ class CodeParser:
         self.RETURNED_ARGS = []
         self.function_lines = 0
         self.statement_indent = 0
+        self.multiple_line_func = 0
         self.HAS_ARGUMENT = 90
         self.opcode = Opcode(self.content, self.CODE_STACK, self.INSTRUCTION_STACK, indentation)
         self.opcode_map = opc_map
@@ -24,6 +25,8 @@ class CodeParser:
         start_line = 0
         counter = 0
         for num in self.content.co_lnotab:
+            if num > 127:   # line overflow fix
+                num = 127-num
             if counter % 2 == 0:
                 self.byte_stepping(num, start_line, False)
                 start_line += num
@@ -33,6 +36,9 @@ class CodeParser:
                     modified_num = num - self.function_lines
                     self.OUTPUT_STRING += '\n'*modified_num
                 else:
+                    if self.multiple_line_func != 0:
+                        self.OUTPUT_STRING = self.OUTPUT_STRING[:-self.multiple_line_func]
+                        self.multiple_line_func = 0
                     self.OUTPUT_STRING += '\n'*num
 
             counter += 1
