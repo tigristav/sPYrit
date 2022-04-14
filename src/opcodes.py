@@ -351,11 +351,15 @@ class Opcode:
         print(return_value)
         if return_value is None:
             if len(self.indentation) != 0:
-                self.code_stack.append(f'return {return_value}')
+                pass                        # body not needed since no return statement == return None and vice versa
+        #        self.code_stack.append(f'return {return_value}')
         #        self.code_stack.append(f'{self.indentation}' + f'return {return_value}')
             else:
                 self.instruction_stack.append(self.return_value)
         else:
+            if isinstance(return_value, str):
+                return_value = return_value.replace('(',"").replace(')',"")
+                
             self.code_stack.append(f'return {return_value}')
             self.instruction_stack.append(self.return_value)
 
