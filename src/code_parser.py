@@ -60,9 +60,6 @@ class CodeParser:
     #    if is_end and self.indentation == 0:
     #        print(f'last pop', self.CODE_STACK.pop())
 
-    #    if is_end and self.INSTRUCTION_STACK[-2] == self.opcode.for_iter:
-    #        self.indentation += 4
-    #        self.opcode.indentation = self.opcode.indentation + (self.indentation * ' ')
         self.empty_stack_to_string()
 
     #    print(f'output: {self.OUTPUT_STRING}')

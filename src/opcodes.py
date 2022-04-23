@@ -348,7 +348,7 @@ class Opcode:
     def return_value(self, arg) -> None:
     #    print(f'RETURN_VALUE {self.code_stack[-1]}')
         return_value = self.code_stack.pop()
-        print(return_value)
+    #    print(return_value)
         if return_value is None:
             if len(self.indentation) != 0:
                 pass                        # body not needed since no return statement == return None and vice versa
@@ -358,8 +358,8 @@ class Opcode:
                 self.instruction_stack.append(self.return_value)
         else:
             if isinstance(return_value, str):
-                return_value = return_value.replace('(',"").replace(')',"")
-                
+                return_value = return_value.replace('(', "").replace(')', "")
+
             self.code_stack.append(f'return {return_value}')
             self.instruction_stack.append(self.return_value)
 
@@ -391,7 +391,6 @@ class Opcode:
             key = None
             val = None
             for index in range(0, arg*2): #multiplied by 2 cause key value pair
-
                 if index % 2 == 0:# and index != 0:
                     val = self.code_stack.pop()
                 else:
@@ -405,8 +404,9 @@ class Opcode:
         #print(f'BUILD_CONST_KEY_MAP {arg}')
         key_tuple = self.code_stack.pop()
         values = []
+        print(f'Keys: {key_tuple} --||-- Stack: {self.code_stack}')
         for index in range(0, arg):
-            values.append(str(key_tuple[(arg-1)-index]) + ': ' + str(self.code_stack.pop()))
+            values.append(f'\'{str(key_tuple[(arg-1)-index])}\'' + ': ' + str(self.code_stack.pop()))
         values.reverse()
         self.code_stack.append('{' + f'{", ".join(values)}' + '}')
         self.instruction_stack.append(self.build_const_key_map)
@@ -748,7 +748,7 @@ class Opcode:
         # print here
         second_term = self.code_stack.pop()
         first_term = self.code_stack.pop()
-        self.code_stack.append(f'{first_term} *= {second_term}')
+        self.code_stack.append(f'{first_term} -= {second_term}')
         self.instruction_stack.append(self.inplace_subtract)
 
     def inplace_add(self, arg) -> None:

@@ -16,10 +16,11 @@ class Decompiler:
     def __init__(self, path):
         self.file_content = self.decompile_file(path)
         self.OUTPUT_STRING = ''
+        self.header = ''
 
     def decompile_file(self, path):
         with open(path, 'rb') as file:
-            header = file.read(16)
+            self.header = file.read(HEADER_SIZE)
             content = marshal.load(file)
 
         return content
