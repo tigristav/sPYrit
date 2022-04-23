@@ -1,5 +1,6 @@
 
-import dis, marshal
+import dis
+import marshal
 
 from code_parser import CodeParser
 
